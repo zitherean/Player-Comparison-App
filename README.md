@@ -60,6 +60,7 @@ streamlit run app.py
 - Data sourced from Understat.com (for educational and informational use only).
 - The app does not store or redistribute data.
 - Some newer versions of python may not work. Python 3.11 was used for this project.
+- Use on a computer screen. The dashboard layout is not optimized for mobile devices.
 
 ---
 ## 💡 Acknowledgments
