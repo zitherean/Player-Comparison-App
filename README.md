@@ -1,9 +1,9 @@
 # ⚽ Player Comparison Dashboard
+👉 [Open App](https://football-player-comparison.streamlit.app/)     
 
-A Streamlit web app for comparing football player performance across the top 5 European leagues using data from [Understat.com](https://understat.com).
-
+A Streamlit web app for comparing football player performance across the top 5 European leagues using data from [Understat.com](https://understat.com).   
+> Best viewed on a computer.
 ---
-
 ## 🚀 Features
 - Compare two players side-by-side by league, season, and team.
 - Visualize attacking, creative, and build-up play metrics.
