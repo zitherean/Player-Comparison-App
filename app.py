@@ -92,16 +92,16 @@ def player_scope(df, scope_name, *, default_season=None, default_player=None):
 
     # League
     leagues = ["All leagues"] + sorted(df['league'].unique())
-    display_league_names = ["All leagues"] + [LEAGUE_NAME_MAP.get(l, l) for l in leagues]
-    league = st.selectbox(f"League ({scope_name})", display_league_names, key=f"{scope_name}_league", index=0)
+    league = st.selectbox(f"League ({scope_name})", leagues, key=f"{scope_name}_league", index=0,
+                        format_func=lambda x: x if x == "All leagues" else LEAGUE_NAME_MAP.get(x, x))
     df_league = df if league == "All leagues" else df[df['league'] == league]
     
     # Season
-    seasons_raw = sorted(df_league['season'].unique())
-    seasons = sorted(map(str, seasons_raw), reverse=True) # latest season first
-    season = st.selectbox(f"Season ({scope_name})", seasons, key=f"{scope_name}_season", index=seasons.index(default_season))
+    seasons = sorted(map(str, df_league['season'].unique()), reverse=True)  # latest first
+    default_season_str = str(default_season) if default_season is not None else seasons[0]
+    season = st.selectbox(f"Season ({scope_name})", seasons, key=f"{scope_name}_season", index=safe_index(seasons, default_season_str, fallback=0))
     df_league_season = df_league[df_league['season'] == season]
-    
+
     # Team
     teams = ["All teams"] + sorted(df_league_season['team_title'].unique())
     team = st.selectbox(f"Team ({scope_name})", teams, key=f"{scope_name}_team", index=0)
