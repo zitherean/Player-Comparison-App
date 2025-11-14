@@ -1,6 +1,8 @@
 import streamlit as st
-from constants import LEAGUE_NAME_MAP, PARQUET_PATH
+import html
+from constants import LEAGUE_NAME_MAP, PARQUET_PATH, SEASON_NAME_MAP
 from utils.data_loader import load_understat_data
+
 
 # --------------------------- HELPER FUNCTIONS ---------------------------
 
@@ -92,11 +94,39 @@ def display_player_info(player1_data, player2_data):
 
 # utils/players.py
 
-import streamlit as st
+def accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"):
+    # Sum numeric columns
+    num_cols = rows.select_dtypes(include="number").columns
+    summed = rows[num_cols].sum()
+
+    # Use most recent row as template
+    base = rows.sort_values("season", ascending=False).iloc[0].copy()
+
+    # First, set all numeric columns to summed totals (for counting stats)
+    for col in num_cols:
+        base[col] = summed[col]
+
+    # Recalculate per-90s instead of using the summed values
+    if summed[minutes_col] > 0:
+        total_minutes = float(summed[minutes_col])
+        denominator = (total_minutes / 90)
+        # Detect per-90 columns by suffix (e.g. "npxG_per90")
+        per90_cols = [c for c in num_cols if c.endswith(per90_suffix)]
+        
+        for col in per90_cols:
+            raw_col = col[: -len(per90_suffix)]  # strip '_per90'
+            
+            if raw_col in summed:
+                # per90 = (total raw stat / total minutes) * 90
+                base[col] = (float(summed[raw_col]) / denominator)
+
+    base["season"] = "All seasons"
+    return base
+
 
 def select_single_player(df, label="Player", key_prefix="p"):
     
-    players = sorted(df["player_name"].unique())
+    players = sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
 
     # Use previously selected value (if it exists) as default
     default_name = st.session_state.get(f"{key_prefix}_player_name")
@@ -121,17 +151,20 @@ def select_single_player(df, label="Player", key_prefix="p"):
     else:
         season_idx = 0
 
-    season = st.selectbox("Filter by season (optional)", seasons, index=season_idx, key=f"{key_prefix}_season_select")
+    season = st.selectbox("Filter by season (optional)", seasons, index=season_idx, key=f"{key_prefix}_season_select", format_func=lambda x: SEASON_NAME_MAP.get(x, x))
 
     st.session_state[f"{key_prefix}_season_value"] = season
 
-    if season != "All seasons":
-        rows = rows[rows["season"] == season]
-
-    rows = rows.sort_values("season", ascending=False)
-    row = rows.iloc[0]
-
-    label_str = f"{row['player_name']} ({row['season']}, {row['team_title']})"
+    if season == "All seasons":
+        # ---- ACCUMULATED STATS ACROSS ALL SEASONS ----
+        row = accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90")
+    else:
+        # ---- SINGLE SEASON ----
+        season_rows = rows[rows["season"] == season]
+        season_rows = season_rows.sort_values("season", ascending=False)
+        row = season_rows.iloc[0]
+    
+    display_season = SEASON_NAME_MAP.get(str(row["season"]), row["season"])
+    label_str = f"{row['player_name']} ({display_season}, {row['team_title']})"
 
     return row, label_str
-

@@ -17,8 +17,8 @@ df = load_understat_data(PARQUET_PATH)
 p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
 
 st.divider()
-
-p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
+with st.expander("Add Player 2"):
+    p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
 
 st.divider()
 
