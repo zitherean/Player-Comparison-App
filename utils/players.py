@@ -67,29 +67,6 @@ def player_scope(df, scope_name, *, default_season=None, default_player=None):
 
     return row, label
 
-
-# --------------------------- PLAYER INFO DISPLAY ---------------------------
-
-def display_player_info(player1_data, player2_data):
-    col1, col2 = st.columns(2)
-    # --- Player 1 Info ---
-    with col1:
-        st.markdown(f"<h3 style='marginbottom:0'>{player1_data['player_name']} " f"<span style='font-size:0.8em;color:gray;'>({player1_data['position']})</span></h3>", unsafe_allow_html=True)
-        st.markdown(f"**Team**: {player1_data['team_title']}")
-        st.markdown(f"**Games played**: {player1_data['games']}")
-        st.markdown(f"**Minutes played**: {player1_data['time']}")
-        st.markdown(f"**Red cards**: {player1_data['red_cards']}")
-        st.markdown(f"**Yellow cards**: {player1_data['yellow_cards']}")
-
-    # --- Player 2 Info ---
-    with col2:
-        st.markdown(f"<h3 style='marginbottom:0'> {player2_data['player_name']} " f"<span style='font-size:0.8em;color:gray;'>({player2_data['position']})</span></h3>", unsafe_allow_html=True)   
-        st.markdown(f"**Team**: {player2_data['team_title']}")
-        st.markdown(f"**Games played**: {player2_data['games']}")
-        st.markdown(f"**Minutes played**: {player2_data['time']}")
-        st.markdown(f"**Red cards**: {player2_data['red_cards']}")
-        st.markdown(f"**Yellow cards**: {player2_data['yellow_cards']}")
-
 # --------------------------- SEARCH + SELECT ---------------------------
 
 # utils/players.py
