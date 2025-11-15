@@ -11,7 +11,7 @@ st.markdown("""Welcome to the Football Player Comparison Dashboard!
             top European leagues using data sourced from [Understat.com](https://understat.com).""")
 st.markdown("Use the sidebar or the buttons below to explore different aspects of player performance.")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
     if st.button("🥅 Finishing"):
@@ -26,8 +26,16 @@ with col3:
         st.switch_page("pages/3_🔁_Build_Up_Play.py")
 
 with col4:
+    if st.button("📐 Metrics"):
+        st.switch_page("pages/4_📐_Metrics.py")
+
+with col5:
+    if st.button("🥇 Leaderboard"):
+        st.switch_page("pages/5_🥇_Leaderboard.py")
+
+with col6:
     if st.button("🔍 Find Players"):
-        st.switch_page("pages/4_🔍_Find_Players.py")
+        st.switch_page("pages/6_🔍_Find_Players.py")
 
 st.divider()
 

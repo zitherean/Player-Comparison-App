@@ -67,6 +67,43 @@ def player_scope(df, scope_name, *, default_season=None, default_player=None):
 
     return row, label
 
+# --------------------------- DISPLAY METRICS ---------------------------
+
+def display_player_info(player_data):
+    st.markdown(f"<h3 style='marginbottom:0'>{player_data['player_name']} " f"<span style='font-size:0.8em;color:gray;'>({player_data['position']})</span></h3>", unsafe_allow_html=True)    
+    st.markdown(f"**Team**: {player_data['team_title']}")
+    st.markdown(f"**Season**: {player_data['season']}")
+    st.markdown(f"**Games played**: {player_data['games']}")
+    st.markdown(f"**Minutes played**: {player_data['time']}")
+    st.markdown(f"**Red cards**: {player_data['red_cards']}")
+    st.markdown(f"**Yellow cards**: {player_data['yellow_cards']}")
+
+# --------------------------- KPI DISPLAY METRICS ---------------------------
+def safe_get(series, key):
+    return series.get(key, 0)
+
+# def kpi_display(label, stat, player_data):
+#     st.metric(label, f"{safe_get(player_data, stat):.2f}")
+
+# def kpi_column_display(p2_label):
+#     kpi_cols_per90 = st.columns(3)
+
+#     with kpi_cols_per90[0]:
+#         kpi_display("Goals / 90 (P1)", )
+#         st.metric("Goals / 90 (P1)", f"{safe_get(p1_clean, 'goals_per90'):.2f}")
+#         if p2_label is not None:
+#             st.metric("Goals / 90 (P2)", f"{safe_get(p2_clean, 'goals_per90'):.2f}")
+
+#     with kpi_cols_per90[1]:
+#         st.metric("xG / 90 (P1)", f"{safe_get(p1_clean, 'xG_per90'):.2f}")
+#         if p2_label is not None:
+#             st.metric("xG / 90 (P2)", f"{safe_get(p2_clean, 'xG_per90'):.2f}")
+
+#     with kpi_cols_per90[2]:
+#         st.metric("Assists / 90 (P1)", f"{safe_get(p1_clean, 'assists_per90'):.2f}")
+#         if p2_label is not None:
+#             st.metric("Assists / 90 (P2)", f"{safe_get(p2_clean, 'assists_per90'):.2f}")
+
 # --------------------------- SEARCH + SELECT ---------------------------
 
 # utils/players.py
