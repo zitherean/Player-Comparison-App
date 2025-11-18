@@ -14,7 +14,7 @@ SEASONS = list(range(2014, 2025))  # 2014 = 2014/15 ... up to 2025/26 update for
 
 # Columns expected to be numeric in raw player totals
 NUMBER_COLS = ["games", "time", "goals", "xG", "shots", "assists", 
-               "xA", "key_passes", "npg", "npxG", "xGChain", "xGBuildup"]
+               "xA", "key_passes", "npg", "npxG", "xGChain", "xGBuildup", "red_cards", "yellow_cards"]
 
 PER_90_COLS = ["goals", "xG", "shots", "assists", "xA", 
                "key_passes", "npg", "npxG", "xGChain", "xGBuildup"]

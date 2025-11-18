@@ -5,3 +5,5 @@ import streamlit as st
 st.set_page_config(page_title="Leaderboard", layout="wide")
 
 st.title("🥇 Leaderboard")
+
+st.subheader("Coming Soon!")

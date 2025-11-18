@@ -1,8 +1,96 @@
 import streamlit as st
+import math
 import html
 from constants import LEAGUE_NAME_MAP, PARQUET_PATH, SEASON_NAME_MAP
 from utils.data_loader import load_understat_data
 
+# --------------------------- ENRICH PLAYER METRICS ---------------------------
+
+def to_num(val, default=0.0):
+    """Safely convert value to float; fallback to default on error."""
+    if val is None:
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
+def enrich_player_metrics(player):
+    """
+    Take a dict/Series-like 'player' and add derived metrics in-place.
+    Returns the same object for convenience.
+    """
+
+    # Make a copy of the original
+    player = player.copy()
+
+    goals       = to_num(player.get("goals"))
+    assists     = to_num(player.get("assists"))
+    xG          = to_num(player.get("xG"))
+    xA          = to_num(player.get("xA"))
+    npg         = to_num(player.get("npg"))
+    npxG        = to_num(player.get("npxG"))
+    shots       = to_num(player.get("shots"))
+    key_passes  = to_num(player.get("key_passes"))
+    time_min    = to_num(player.get("time"))   
+    games       = to_num(player.get("games"))
+    xg_buildup  = to_num(player.get("xGBuildup"))
+    xg_chain    = to_num(player.get("xGChain"))
+
+    goals_per90     = to_num(player.get("goals_per90"))
+    assists_per90   = to_num(player.get("assists_per90"))
+    xG_per90        = to_num(player.get("xG_per90"))
+    xA_per90        = to_num(player.get("xA_per90"))
+    key_passes_per90 = to_num(player.get("key_passes_per90"))
+    xg_buildup_per90  = to_num(player.get("xGBuildup_per90"))
+    xg_chain_per90    = to_num(player.get("xGChain_per90"))
+        
+
+    yellow_cards = to_num(player.get("yellow_cards"))
+    red_cards    = to_num(player.get("red_cards"))
+
+    # ---------- ATTACKING OUTPUT ----------
+    player["goal_contrib"] = goals + assists                        
+    player["goal_contrib_per90"] = goals_per90 + assists_per90      
+
+    # Over/underperformance
+    player["goals_minus_xG"] = goals - xG
+    player["npg_minus_npxG"] = npg - npxG
+
+    # ---------- EFFICIENCY ----------
+    # Conversion rate
+    if shots > 0:
+        player["conversion_rate"] = (goals / shots) * 100
+        player["xG_per_shot"] = xG / shots
+    else:
+        player["conversion_rate"] = math.nan
+        player["xG_per_shot"] = math.nan
+
+    # chance quality created
+    if key_passes > 0:
+        player["xA_per_key_pass"] = xA / key_passes
+    else:
+        player["xA_per_key_pass"] = math.nan
+
+    # ---------- USAGE / INVOLVEMENT ----------
+    if games > 0:
+        player["mins_per_game"] = time_min / games
+        player["goal_contrib_per_game"] = (goals + assists) / games
+    else:
+        player["mins_per_game"] = math.nan
+        player["goal_contrib_per_game"] = math.nan
+
+    # ---------- DISCIPLINE ----------
+    if time_min > 0:
+        factor = 90.0 / time_min
+        player["yellow_per90"] = yellow_cards * factor
+        player["red_per90"] = red_cards * factor
+    else:
+        player["yellow_per90"] = math.nan
+        player["red_per90"] = math.nan
+
+    return player
 
 # --------------------------- HELPER FUNCTIONS ---------------------------
 
@@ -12,7 +100,6 @@ def safe_index(options, value, fallback=0):
         return options.index(value)
     except Exception:
         return fallback if options else 0
-
 
 # --------------------------- PLAYER SELECTION FUNCTION ---------------------------
 
@@ -70,39 +157,48 @@ def player_scope(df, scope_name, *, default_season=None, default_player=None):
 # --------------------------- DISPLAY METRICS ---------------------------
 
 def display_player_info(player_data):
-    st.markdown(f"<h3 style='marginbottom:0'>{player_data['player_name']} " f"<span style='font-size:0.8em;color:gray;'>({player_data['position']})</span></h3>", unsafe_allow_html=True)    
-    st.markdown(f"**Team**: {player_data['team_title']}")
-    st.markdown(f"**Season**: {player_data['season']}")
-    st.markdown(f"**Games played**: {player_data['games']}")
-    st.markdown(f"**Minutes played**: {player_data['time']}")
-    st.markdown(f"**Red cards**: {player_data['red_cards']}")
-    st.markdown(f"**Yellow cards**: {player_data['yellow_cards']}")
+    st.markdown(
+        f"""
+        <div style="
+            padding: 12px 16px;
+            border-radius: 10px;
+            background-color: #f7f7f7;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 12px;
+        ">
+            <h3 style="margin-bottom:0;">
+                {player_data['player_name']}
+                <span style="font-size:0.75em;color:gray;">({player_data['position']})</span>
+            </h3>
+            <div style="color:#666;font-size:0.9em;">
+                <strong>{player_data['team_title']}</strong> · {player_data['season']}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # --------------------------- KPI DISPLAY METRICS ---------------------------
 def safe_get(series, key):
     return series.get(key, 0)
 
-# def kpi_display(label, stat, player_data):
-#     st.metric(label, f"{safe_get(player_data, stat):.2f}")
+def format_value(val):
+    try:
+        return f"{float(val):.2f}"
+    except:
+        return str(val)
 
-# def kpi_column_display(p2_label):
-#     kpi_cols_per90 = st.columns(3)
+def display_key_stats(title, p1_clean, p2_clean, metrics):
+    """
+    """
+    st.markdown(f"### {title}")
 
-#     with kpi_cols_per90[0]:
-#         kpi_display("Goals / 90 (P1)", )
-#         st.metric("Goals / 90 (P1)", f"{safe_get(p1_clean, 'goals_per90'):.2f}")
-#         if p2_label is not None:
-#             st.metric("Goals / 90 (P2)", f"{safe_get(p2_clean, 'goals_per90'):.2f}")
+    cols = st.columns(len(metrics))
 
-#     with kpi_cols_per90[1]:
-#         st.metric("xG / 90 (P1)", f"{safe_get(p1_clean, 'xG_per90'):.2f}")
-#         if p2_label is not None:
-#             st.metric("xG / 90 (P2)", f"{safe_get(p2_clean, 'xG_per90'):.2f}")
-
-#     with kpi_cols_per90[2]:
-#         st.metric("Assists / 90 (P1)", f"{safe_get(p1_clean, 'assists_per90'):.2f}")
-#         if p2_label is not None:
-#             st.metric("Assists / 90 (P2)", f"{safe_get(p2_clean, 'assists_per90'):.2f}")
+    for col, (label, key) in zip(cols, metrics):
+        with col:
+            st.metric(f"{label} ({p1_clean['player_name']})", format_value(safe_get(p1_clean, key)))
+            st.metric(f"{label} ({p2_clean['player_name']})", format_value(safe_get(p2_clean, key)))
 
 # --------------------------- SEARCH + SELECT ---------------------------
 

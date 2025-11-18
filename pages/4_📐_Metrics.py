@@ -2,19 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from utils.data_loader import load_understat_data
-from utils.players import select_single_player, display_player_info
+from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics
 from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP, SEASON_NAME_MAP
-
-# --------------------------- HELPER FUNCTIONS ---------------------------
-
-def format_value(x):
-    # pretty format numbers to 2 decimal places
-    if isinstance(x, (int, float, np.floating)):
-        return f"{x:.2f}"
-    return x
-
-def safe_get(series, key):
-    return series.get(key, 0)
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
 
@@ -28,13 +17,19 @@ df = load_understat_data(PARQUET_PATH)
 
 p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
 p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
+p1_clean = enrich_player_metrics(p1_clean)
+
+p2_data, p2_label, p2_clean = None, None, None
 
 st.divider()
 
 with st.expander("Add Player 2"):
     p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
-    p2_clean = p2_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
-
+    
+    if p2_data is not None:
+        p2_clean = p2_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
+        p2_clean = enrich_player_metrics(p2_clean)
+    
 st.divider()
 
 # --------------------------- TAB ---------------------------
@@ -49,56 +44,96 @@ with overview_tab:
         display_player_info(p1_clean)
 
     with col_p2:
-        if p2_label is not None:
-            display_player_info(p2_clean)
-        else:
-            st.info("Add a second player from the expander above to compare.")
+        display_player_info(p2_clean)
 
     st.divider()
 
 # --------------------------- KEY STATS TOTAL ---------------------------
 
-    st.markdown("### Key stats (total)")
+    metrics_total = [
+        ("Goals", "goals"),
+        ("Assists", "assists"),
+        ("G + A", "goal_contrib"),
+    ]
 
-    kpi_cols_total = st.columns(3)
-
-    with kpi_cols_total[0]:
-        st.metric("Goals (P1)", f"{safe_get(p1_clean, 'goals'):.2f}")
-        if p2_label is not None:
-            st.metric("Goals (P2)", f"{safe_get(p2_clean, 'goals'):.2f}")
-
-    with kpi_cols_total[1]:
-        st.metric("xG (P1)", f"{safe_get(p1_clean, 'xG'):.2f}")
-        if p2_label is not None:
-            st.metric("xG (P2)", f"{safe_get(p2_clean, 'xG'):.2f}")
-
-    with kpi_cols_total[2]:
-        st.metric("Assists (P1)", f"{safe_get(p1_clean, 'assists'):.2f}")
-        if p2_label is not None:
-            st.metric("Assists (P2)", f"{safe_get(p2_clean, 'assists'):.2f}")
+    display_key_stats(title="Attacking output (total)", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_total)
 
     st.divider()
 
 # --------------------------- KEY STATS PER 90 ---------------------------
 
-    st.markdown("### Key stats (per 90)")
+    metrics_per90 = [
+        ("Goals / 90", "goals_per90"),
+        ("Assists / 90", "assists_per90"),
+        ("G + A / 90", "goal_contrib_per90"),
+    ]
 
-    kpi_cols_per90 = st.columns(3)
+    display_key_stats(title="Attacking output (per 90)", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_per90)
 
-    with kpi_cols_per90[0]:
-        st.metric("Goals / 90 (P1)", f"{safe_get(p1_clean, 'goals_per90'):.2f}")
-        if p2_label is not None:
-            st.metric("Goals / 90 (P2)", f"{safe_get(p2_clean, 'goals_per90'):.2f}")
+    st.divider()
 
-    with kpi_cols_per90[1]:
-        st.metric("xG / 90 (P1)", f"{safe_get(p1_clean, 'xG_per90'):.2f}")
-        if p2_label is not None:
-            st.metric("xG / 90 (P2)", f"{safe_get(p2_clean, 'xG_per90'):.2f}")
+# --------------------------- FINISHING ---------------------------
 
-    with kpi_cols_per90[2]:
-        st.metric("Assists / 90 (P1)", f"{safe_get(p1_clean, 'assists_per90'):.2f}")
-        if p2_label is not None:
-            st.metric("Assists / 90 (P2)", f"{safe_get(p2_clean, 'assists_per90'):.2f}")
+    metrics_finishing = [
+        ("Conversion Rate (%)", "conversion_rate"),
+        ("xG per Shot", "xG_per_shot"),
+        ("Goals - xG", "goals_minus_xG"),
+        ("NP Goals - NP xG", "npg_minus_npxG"),
+    ]
+
+    display_key_stats(title="Finishing & shot quality", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_finishing)
+
+    st.divider()
+
+# --------------------------- CREATIVITY ---------------------------
+
+    metrics_creation = [
+        ("Key Passes / 90", "key_passes_per90"),
+        ("xA / 90", "xA_per90"),
+        ("xA per Key Pass", "xA_per_key_pass"),
+    ]
+
+    display_key_stats(title="Creativity & chance creation", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_creation)
+
+    st.divider()
+
+# --------------------------- BUILD UP ---------------------------
+
+    metrics_buildup = [
+        ("xG Buildup", "xGBuildup"),
+        ("xG Chain", "xGChain"),
+        ("xG Buildup / 90", "xGBuildup_per90"),
+        ("xG Chain / 90", "xGChain_per90"),
+    ]
+
+    display_key_stats(title="Build-up & involvement", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_buildup)
+
+    st.divider()
+
+# --------------------------- USAGE ---------------------------
+
+    metrics_usage = [
+        ("Games Played", "games"),
+        ("Minutes Played", "time"),
+        ("Minutes / Game", "mins_per_game"),
+        ("G + A / Game", "goal_contrib_per_game"),
+    ]
+
+    display_key_stats(title="Usage & Availability", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_usage)
+
+    st.divider()
+
+# --------------------------- DISCIPLINE ---------------------------
+
+
+    metrics_discipline = [
+        ("Red Cards", "red_cards"),
+        ("Red / 90", "red_per90"),
+        ("Yellow Cards", "yellow_cards"),
+        ("Yellow / 90", "yellow_per90"),
+    ]
+
+    display_key_stats(title="Discipline & On-Pitch Behavior", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_discipline)
 
     st.divider()
 
@@ -147,4 +182,11 @@ comparison_display = comparison.map(format_value).astype(str)
 
 with table_tab:
     st.markdown("### Full metric comparison")
+    st.markdown(
+        """
+        This table shows the full set of metrics used in the app for the selected players.  
+        Totals reflect the chosen season (or all league seasons), while per-90 values are recalculated from total minutes played.
+        """
+    )
+
     st.table(comparison_display)
