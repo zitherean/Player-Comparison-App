@@ -29,6 +29,16 @@ SEASON_NAME_MAP = {
 
 # Mapping of column names to human-readable metric labels for display
 METRIC_LABELS = {
+    "id": "Player ID",
+    "player_name": "Player Name",
+    "games": "Games Played",
+    "time": "Minutes Played",
+    "yellow_cards": "Yellow Cards",
+    "red_cards": "Red Cards",
+    "team_title": "Team",
+    "position": "Position",
+    "league": "League",
+    "season": "Season",
     "goals": "Goals",
     "xG": "Expected Goals (xG)",
     "shots": "Shots",
