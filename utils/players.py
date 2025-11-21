@@ -102,57 +102,97 @@ def safe_index(options, value, fallback=0):
         return fallback if options else 0
 
 # --------------------------- PLAYER SELECTION FUNCTION ---------------------------
-
-def player_scope(df, scope_name, *, default_season=None, default_player=None):
+def player_search(df):
     """
-    Displays selection boxes for league, season, team, and player.
-    Returns the chosen player's data row and label for chart display.
+    Widget group to search players by:
+    - Player name (optional, with text search)
+    - League, Season, Team (any combination)
+
+    Returns:
+        filtered_df (pd.DataFrame): DataFrame filtered according to the selected criteria.
     """
-    st.subheader(scope_name)
 
-    # League
-    leagues = ["All leagues"] + sorted(df['league'].unique())
-    league = st.selectbox(f"League ({scope_name})", leagues, key=f"{scope_name}_league", index=0,
-                        format_func=lambda x: x if x == "All leagues" else LEAGUE_NAME_MAP.get(x, x))
-    df_league = df if league == "All leagues" else df[df['league'] == league]
-    
-    # Season
-    seasons = sorted(map(str, df_league['season'].unique()), reverse=True)  # latest first
-    default_season_str = str(default_season) if default_season is not None else seasons[0]
-    season = st.selectbox(f"Season ({scope_name})", seasons, key=f"{scope_name}_season", index=safe_index(seasons, default_season_str, fallback=0))
-    df_league_season = df_league[df_league['season'] == season]
+    # --- BASE OPTIONS FROM DATAFRAME ---
+    all_players = sorted(html.unescape(name) for name in df["player_name"].unique())
+    all_seasons = sorted(df["season"].unique(), reverse=True)
+    all_leagues = sorted(df["league"].unique())
+    all_teams = sorted(df["team_title"].unique())
 
-    # Team
-    teams = ["All teams"] + sorted(df_league_season['team_title'].unique())
-    team = st.selectbox(f"Team ({scope_name})", teams, key=f"{scope_name}_team", index=0)
-    df_league_season_team = df_league_season if team == "All teams" else df_league_season[df_league_season['team_title'] == team]
-    
-    # Player
-    players = sorted(df_league_season_team['player_name'].unique())
-    if isinstance(default_player, str):
-        player_idx = safe_index(players, default_player, fallback=0)
+    # ---------------- RESET BUTTON ----------------
+    reset = st.button("🔁 Reset filters")
+
+    if reset:
+        # Clear text input
+        st.session_state["player_name_query"] = ""
+
+        # Reset dropdowns to "All ..." options
+      
+        st.session_state["season_select"] = "All seasons"
+        st.session_state["league_select"] = "All leagues"
+        st.session_state["team_select"] = "All teams"
+
+        # Clear any dynamic player select keys
+        for key in list(st.session_state.keys()):
+            if key.startswith("player_select_"):
+                del st.session_state[key]
+                st.session_state[key] = "All players"
+        st.rerun()
+
+    # ---------------- NAME SEARCH ----------------
+    st.subheader("Search by player name")
+
+    name_query = st.text_input("Type part of the player's name (optional)", value="", key="player_name_query", placeholder="e.g. Salah, De Bruyne, Messi...")
+
+    if name_query:
+        # Filter list of players shown in the selectbox
+        filtered_player_options = [p for p in all_players if name_query.lower() in p.lower()]
+        if not filtered_player_options:
+            st.info("No players found matching that name. Try adjusting your search or using the filters below.")
+            filtered_player_options = all_players  # fallback
     else:
-        player_idx = 0
-    player = st.selectbox(f"Player ({scope_name})", players, key=f"{scope_name}_player", index=player_idx)
+        filtered_player_options = all_players
 
-    # Filter for chosen player (within selected team if applicable)
-    if team == "All teams":
-        rows = df_league_season[df_league_season['player_name'] == player]
-    else: 
-        rows = df_league_season_team[df_league_season_team['player_name'] == player]
+    # Default index for the selectbox
+    default_index = 1 if (name_query and filtered_player_options) else 0
 
-    if rows.empty:
-        st.warning(f"No data for {player} in {league} {season}.")
-        st.stop()
+    player = st.selectbox("Select player (or leave as 'All players' to use only filters)", options=["All players"] + filtered_player_options, key=f"player_select_{name_query}", index=default_index)
 
-    # Extract first record (players are unique per team-season)
-    row = rows.iloc[0].copy()   
+    st.markdown("— or filter using league, season, and team —")
 
-    # Format display label
-    team_for_label = f", {row['team_title']}"
-    label = f"{row['player_name']} ({season}{team_for_label})"
+    # ---------------- FILTERS: LEAGUE / SEASON / TEAM ----------------
+    col1, col2, col3 = st.columns(3)
 
-    return row, label
+    with col1:
+        season = st.selectbox("Season", options=["All seasons"] + all_seasons, key="season_select", format_func=lambda x: SEASON_NAME_MAP.get(x, x))
+
+    with col2:
+        league = st.selectbox("League", options=["All leagues"] + all_leagues, key="league_select", format_func=lambda x: LEAGUE_NAME_MAP.get(x, x))
+
+    with col3:
+        team = st.selectbox("Team", options=["All teams"] + all_teams, key="team_select")
+
+    # ---------------- APPLY FILTERS TO DATAFRAME ----------------
+    filtered_df = df.copy()
+
+    # Player filter (takes precedence if chosen)
+    if player != "All players":
+        filtered_df = filtered_df[filtered_df["player_name"] == player]
+
+    # Additional filters (work whether or not a player is chosen)
+    if season != "All seasons":
+        filtered_df = filtered_df[filtered_df["season"] == season]
+
+    if league != "All leagues":
+        filtered_df = filtered_df[filtered_df["league"] == league]
+
+    if team != "All teams":
+        filtered_df = filtered_df[filtered_df["team_title"] == team]
+
+    unique_players = filtered_df["player_name"].nunique()
+
+    st.markdown(f"🔎 Found **{(unique_players)}** matching players.")
+
+    return filtered_df, player
 
 # --------------------------- DISPLAY METRICS ---------------------------
 
