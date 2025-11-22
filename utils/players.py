@@ -6,16 +6,6 @@ from utils.data_loader import load_understat_data
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
 
-def to_num(val, default=0.0):
-    """Safely convert value to float; fallback to default on error."""
-    if val is None:
-        return default
-    try:
-        return float(val)
-    except (ValueError, TypeError):
-        return default
-
-
 def enrich_player_metrics(player):
     """
     Take a dict/Series-like 'player' and add derived metrics in-place.
@@ -25,30 +15,30 @@ def enrich_player_metrics(player):
     # Make a copy of the original
     player = player.copy()
 
-    goals       = to_num(player.get("goals"))
-    assists     = to_num(player.get("assists"))
-    xG          = to_num(player.get("xG"))
-    xA          = to_num(player.get("xA"))
-    npg         = to_num(player.get("npg"))
-    npxG        = to_num(player.get("npxG"))
-    shots       = to_num(player.get("shots"))
-    key_passes  = to_num(player.get("key_passes"))
-    time_min    = to_num(player.get("time"))   
-    games       = to_num(player.get("games"))
-    xg_buildup  = to_num(player.get("xGBuildup"))
-    xg_chain    = to_num(player.get("xGChain"))
+    goals       = player.get("goals")
+    assists     = player.get("assists")
+    xG          = player.get("xG")
+    xA          = player.get("xA")
+    npg         = player.get("npg")
+    npxG        = player.get("npxG")
+    shots       = player.get("shots")
+    key_passes  = player.get("key_passes")
+    time_min    = player.get("time")
+    games       = player.get("games")
+    xg_buildup  = player.get("xGBuildup")
+    xg_chain    = player.get("xGChain")
 
-    goals_per90     = to_num(player.get("goals_per90"))
-    assists_per90   = to_num(player.get("assists_per90"))
-    xG_per90        = to_num(player.get("xG_per90"))
-    xA_per90        = to_num(player.get("xA_per90"))
-    key_passes_per90 = to_num(player.get("key_passes_per90"))
-    xg_buildup_per90  = to_num(player.get("xGBuildup_per90"))
-    xg_chain_per90    = to_num(player.get("xGChain_per90"))
+    goals_per90     = player.get("goals_per90")
+    assists_per90   = player.get("assists_per90")
+    xG_per90        = player.get("xG_per90")
+    xA_per90        = player.get("xA_per90")
+    key_passes_per90 = player.get("key_passes_per90")
+    xg_buildup_per90  = player.get("xGBuildup_per90")
+    xg_chain_per90    = player.get("xGChain_per90")
         
 
-    yellow_cards = to_num(player.get("yellow_cards"))
-    red_cards    = to_num(player.get("red_cards"))
+    yellow_cards = player.get("yellow_cards")
+    red_cards    = player.get("red_cards")
 
     # ---------- ATTACKING OUTPUT ----------
     player["goal_contrib"] = goals + assists                        
@@ -69,8 +59,10 @@ def enrich_player_metrics(player):
 
     # chance quality created
     if key_passes > 0:
+        player["assists_per_key_pass"] = assists / key_passes
         player["xA_per_key_pass"] = xA / key_passes
     else:
+        player["assists_per_key_pass"] = math.nan        
         player["xA_per_key_pass"] = math.nan
 
     # ---------- USAGE / INVOLVEMENT ----------
