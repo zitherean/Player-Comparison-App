@@ -62,4 +62,6 @@ METRIC_LABELS = {
     "xGChain": "xG Chain",
     "xGChain_per90": "xG Chain per 90",
     "goal_contrib": "Goals + Assists",
+    "conversion_rate": "Conversion Rate (%)",
+    "assists_per_key_pass": "Assists per Key Pass",     
 }

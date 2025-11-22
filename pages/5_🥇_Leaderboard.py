@@ -26,12 +26,12 @@ with st.spinner("Crunching the numbers… hang tight! ⏳"):
 col1, col2 = st.columns(2)
 
 with col1:
-    display_leaderboard(current_season_players, "goals", CURRENT_SEASON_STRING)
-    display_leaderboard(current_season_players, "goal_contrib", CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["goals", "conversion_rate"], CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["goal_contrib"], CURRENT_SEASON_STRING)
 
 with col2:
-    display_leaderboard(current_season_players, "assists", CURRENT_SEASON_STRING)
-    display_leaderboard(current_season_players, "conversion_rate", CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["assists", "assists_per_key_pass"], CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["xGBuildup"], CURRENT_SEASON_STRING)
 
 # --------------------------- ALL TIME LEADERBOARD  ---------------------------
 
@@ -42,7 +42,8 @@ with st.spinner("Crunching the numbers… hang tight! ⏳"):
 
 col1, col2 = st.columns(2)
 with col1:
-    display_leaderboard(all_players, "goals", ALL_SEASON_STRING)
-    display_leaderboard(all_players, "goal_contrib", ALL_SEASON_STRING)
+    display_leaderboard(all_players, ["goals", "conversion_rate"], ALL_SEASON_STRING)
+    display_leaderboard(all_players, ["goal_contrib"], ALL_SEASON_STRING)
 with col2:
-    display_leaderboard(all_players, "assists", ALL_SEASON_STRING)
+    display_leaderboard(all_players, ["assists", "assists_per_key_pass"], ALL_SEASON_STRING)
+    display_leaderboard(all_players, ["xGBuildup"], ALL_SEASON_STRING)    
