@@ -88,9 +88,10 @@ with overview_tab:
 # --------------------------- CREATIVITY ---------------------------
 
     metrics_creation = [
+        ("Assists per Key Pass", "assists_per_key_pass"), 
+        ("xA per Key Pass", "xA_per_key_pass"),
         ("Key Passes / 90", "key_passes_per90"),
         ("xA / 90", "xA_per90"),
-        ("xA per Key Pass", "xA_per_key_pass"),
     ]
 
     display_key_stats(title="Creativity & chance creation", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_creation)
