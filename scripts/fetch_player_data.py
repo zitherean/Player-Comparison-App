@@ -10,7 +10,20 @@ import datetime
 CONCURRENCY = 6
 
 LEAGUES = ["EPL", "La_liga", "Bundesliga", "Serie_A", "Ligue_1"] # top 5 leagues according to Understat API
-SEASONS = list(range(2014, 2025))  # 2014 = 2014/15 ... up to 2025/26 update for next season
+
+# helper to get current season
+def get_current_understat_season(dt=None):
+    """
+    Returns the Understat season start year.
+    Example: 2025 for 2025/26 season.
+    """
+    if dt is None:
+        dt = datetime.datetime.now()
+
+    return dt.year if dt.month >= 7 else dt.year - 1
+
+current_season = get_current_understat_season()
+SEASONS = list(range(2014, current_season + 1))  # 2014 = 2014/15 ... up to 2025/26 update for next season
 
 # Columns expected to be numeric in raw player totals
 NUMBER_COLS = ["games", "time", "goals", "xG", "shots", "assists", 
@@ -20,6 +33,7 @@ PER_90_COLS = ["goals", "xG", "shots", "assists", "xA",
                "key_passes", "npg", "npxG", "xGChain", "xGBuildup"]
 
 # ---------------------------HELPER FUNCTIONS---------------------------
+
 # helper to convert columns to numeric
 def _to_num(df, cols):
     """Coerce selected columns to numeric (invalid values become NaN)."""
