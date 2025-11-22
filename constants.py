@@ -2,6 +2,8 @@
 # Base directory for Parquet files
 PARQUET_PATH = "data/understat_players"
 
+CURRENT_SEASON = "2024" # update to current season
+
 # Friendly names for leagues as displayed in dropdowns
 LEAGUE_NAME_MAP = { 
     "EPL": "Premier League",
@@ -59,4 +61,7 @@ METRIC_LABELS = {
     "xGBuildup_per90": "xG Buildup per 90",
     "xGChain": "xG Chain",
     "xGChain_per90": "xG Chain per 90",
+    "goal_contrib": "Goals + Assists",
+    "conversion_rate": "Conversion Rate (%)",
+    "assists_per_key_pass": "Assists per Key Pass",     
 }
