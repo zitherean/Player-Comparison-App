@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from constants import LEAGUE_NAME_MAP, SEASON_NAME_MAP, METRIC_LABELS
+from constants import LEAGUE_NAME_MAP, METRIC_LABELS
+from utils.season import SEASON_NAME_MAP
 from utils.players import accumulate_player_rows, enrich_player_metrics
 
 @st.cache_data
@@ -8,7 +9,9 @@ def build_player_table(df, season=None):
     """Aggregate all seasons per player using accumulate_player_rows."""
     
     if season is not None and season != "All seasons":
-        df = df[df["season"] == season].copy()
+        season_str = str(season)
+        df = df[df["season"] == season_str].copy()
+
 
     player_rows = []
     for player_name, rows in df.groupby("player_name"):

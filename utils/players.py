@@ -1,7 +1,8 @@
 import streamlit as st
 import math
 import html
-from constants import LEAGUE_NAME_MAP, PARQUET_PATH, SEASON_NAME_MAP
+from constants import LEAGUE_NAME_MAP, SEASON_NAME_MAP
+from utils.season import SEASON_NAME_MAP
 from utils.data_loader import load_understat_data
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------

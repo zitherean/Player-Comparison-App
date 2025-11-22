@@ -3,24 +3,13 @@ import aiohttp
 import pandas as pd
 from understat import Understat
 from utils.partitioned_parquet import write_partitioned_players
-import datetime
+from utils.season import get_current_understat_season
 
 # Max number of concurrent requests (both semaphore and TCP connector use this) 
 # Be friendly to Understat's servers
 CONCURRENCY = 6
 
 LEAGUES = ["EPL", "La_liga", "Bundesliga", "Serie_A", "Ligue_1"] # top 5 leagues according to Understat API
-
-# helper to get current season
-def get_current_understat_season(dt=None):
-    """
-    Returns the Understat season start year.
-    Example: 2025 for 2025/26 season.
-    """
-    if dt is None:
-        dt = datetime.datetime.now()
-
-    return dt.year if dt.month >= 7 else dt.year - 1
 
 current_season = get_current_understat_season()
 SEASONS = list(range(2014, current_season + 1))  # 2014 = 2014/15 ... up to 2025/26 update for next season

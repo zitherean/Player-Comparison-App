@@ -1,9 +1,8 @@
 import streamlit as st
-from constants import PARQUET_PATH, CURRENT_SEASON
+from constants import PARQUET_PATH, CURRENT_SEASON_NAME, CURRENT_SEASON
 from utils.data_loader import load_understat_data
 from utils.leaderboard import display_leaderboard, build_player_table
 
-CURRENT_SEASON_STRING = "2024/25"
 ALL_SEASON_STRING = "all seasons"
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
@@ -18,7 +17,7 @@ df = load_understat_data(PARQUET_PATH)
 
 # --------------------------- CURRENT SEASON LEADERBOARD ---------------------------
 
-st.subheader(f"Top Performers in the {CURRENT_SEASON_STRING} Season")
+st.subheader(f"Top Performers in the {CURRENT_SEASON_NAME} Season")
 
 with st.spinner("Crunching the numbers… hang tight! ⏳"):
     current_season_players = build_player_table(df, season=CURRENT_SEASON)
@@ -26,12 +25,12 @@ with st.spinner("Crunching the numbers… hang tight! ⏳"):
 col1, col2 = st.columns(2)
 
 with col1:
-    display_leaderboard(current_season_players, ["goals", "conversion_rate"], CURRENT_SEASON_STRING)
-    display_leaderboard(current_season_players, ["goal_contrib"], CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["goals", "conversion_rate"], CURRENT_SEASON_NAME)
+    display_leaderboard(current_season_players, ["goal_contrib"], CURRENT_SEASON_NAME)
 
 with col2:
-    display_leaderboard(current_season_players, ["assists", "assists_per_key_pass"], CURRENT_SEASON_STRING)
-    display_leaderboard(current_season_players, ["xGBuildup"], CURRENT_SEASON_STRING)
+    display_leaderboard(current_season_players, ["assists", "assists_per_key_pass"], CURRENT_SEASON_NAME)
+    display_leaderboard(current_season_players, ["xGBuildup"], CURRENT_SEASON_NAME)
 
 # --------------------------- ALL TIME LEADERBOARD  ---------------------------
 
