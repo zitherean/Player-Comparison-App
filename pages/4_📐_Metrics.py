@@ -15,15 +15,15 @@ st.title("📐 Metrics")
 
 df = load_understat_data(PARQUET_PATH)
 
-p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
-p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
-p1_clean = enrich_player_metrics(p1_clean)
+col1, col2 = st.columns(2)
+with col1:
+    p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+    p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
+    p1_clean = enrich_player_metrics(p1_clean)
 
-p2_data, p2_label, p2_clean = None, None, None
+    p2_data, p2_label, p2_clean = None, None, None
 
-st.divider()
-
-with st.expander("Add Player 2"):
+with col2:
     p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
     
     if p2_data is not None:
