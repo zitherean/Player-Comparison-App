@@ -266,9 +266,27 @@ def accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"):
     base["season"] = "All seasons"
     return base
 
+def get_position(df, player_name):
+    rows = df[df["player_name"] == player_name]
+
+    # If we don't have that player or no position column, return empty string
+    if rows.empty or "position" not in rows.columns:
+        return ""
+
+    # Safe to access first row now
+    return str(rows["position"].iloc[0])
 
 def select_single_player(df, label="Player", key_prefix="p"):
     
+    pos_map = (
+        df[["player_name", "position"]]
+        .dropna(subset=["position"])
+        .drop_duplicates("player_name")
+        .set_index("player_name")["position"]
+        .astype(str)
+        .to_dict()
+    )
+
     players = sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
 
     # Use previously selected value (if it exists) as default
@@ -278,7 +296,7 @@ def select_single_player(df, label="Player", key_prefix="p"):
     else:
         default_idx = 0
 
-    player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select")
+    player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select", format_func=lambda name: f"{name} ({pos_map.get(name, '')})")
 
     # Save the selection so other pages can reuse it
     st.session_state[f"{key_prefix}_player_name"] = player
