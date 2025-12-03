@@ -1,89 +1,97 @@
 import streamlit as st
-import math
+import numpy as np
+import pandas as pd
 import html
 from constants import LEAGUE_NAME_MAP, SEASON_NAME_MAP
 from utils.season import SEASON_NAME_MAP
-from utils.data_loader import load_understat_data
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
 
-def enrich_player_metrics(player):
+def enrich_player_metrics(obj):
     """
-    Take a dict/Series-like 'player' and add derived metrics in-place.
-    Returns the same object for convenience.
+    Flexible wrapper:
+    - If `obj` is a Series -> treat as a single player row.
+    - If `obj` is a DataFrame -> treat as multiple rows.
+    Returns the same type it receives.
     """
+    if isinstance(obj, pd.Series):
+        # one row -> convert to 1-row DataFrame
+        df_single = obj.to_frame().T
+        enriched_df = _enrich_player_metrics_df(df_single)
+        # return the (only) row back as Series
+        return enriched_df.iloc[0]
 
-    # Make a copy of the original
-    player = player.copy()
+    elif isinstance(obj, pd.DataFrame):
+        return _enrich_player_metrics_df(obj)
 
-    goals       = player.get("goals")
-    assists     = player.get("assists")
-    xG          = player.get("xG")
-    xA          = player.get("xA")
-    npg         = player.get("npg")
-    npxG        = player.get("npxG")
-    shots       = player.get("shots")
-    key_passes  = player.get("key_passes")
-    time_min    = player.get("time")
-    games       = player.get("games")
-    xg_buildup  = player.get("xGBuildup")
-    xg_chain    = player.get("xGChain")
+    else:
+        raise TypeError(f"enrich_player_metrics expects a pandas Series or DataFrame, got {type(obj)}")
 
-    goals_per90     = player.get("goals_per90")
-    assists_per90   = player.get("assists_per90")
-    xG_per90        = player.get("xG_per90")
-    xA_per90        = player.get("xA_per90")
-    key_passes_per90 = player.get("key_passes_per90")
-    xg_buildup_per90  = player.get("xGBuildup_per90")
-    xg_chain_per90    = player.get("xGChain_per90")
-        
 
-    yellow_cards = player.get("yellow_cards")
-    red_cards    = player.get("red_cards")
+def _enrich_player_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    # Helpers
+    def col(name, default=0):
+        if name in df.columns:
+            s = df[name]
+            # If it's object dtype, try to convert to numeric first
+            if s.dtype == "O":
+                s = pd.to_numeric(s, errors="coerce")
+            return s.fillna(default)
+        return pd.Series(default, index=df.index, dtype="float64")
+
+
+    goals       = col("goals")
+    assists     = col("assists")
+    xG          = col("xG")
+    xA          = col("xA")
+    npg         = col("npg")
+    npxG        = col("npxG")
+    shots       = col("shots")
+    key_passes  = col("key_passes")
+    time_min    = col("time")
+    games       = col("games")
+    yellow      = col("yellow_cards")
+    red         = col("red_cards")
+
+    goals_per90      = col("goals_per90")
+    assists_per90    = col("assists_per90")
+    xG_per90         = col("xG_per90")
+    xA_per90         = col("xA_per90")
+    key_passes_per90 = col("key_passes_per90")
+    xg_buildup_per90 = col("xGBuildup_per90")
+    xg_chain_per90   = col("xGChain_per90")
 
     # ---------- ATTACKING OUTPUT ----------
-    player["goal_contrib"] = goals + assists                        
-    player["goal_contrib_per90"] = goals_per90 + assists_per90      
+    df["goal_contrib"] = goals + assists
+    df["goal_contrib_per90"] = goals_per90 + assists_per90
 
     # Over/underperformance
-    player["goals_minus_xG"] = goals - xG
-    player["npg_minus_npxG"] = npg - npxG
+    df["goals_minus_xG"] = goals - xG
+    df["npg_minus_npxG"] = npg - npxG
 
     # ---------- EFFICIENCY ----------
-    # Conversion rate
-    if shots > 0:
-        player["conversion_rate"] = (goals / shots) * 100
-        player["xG_per_shot"] = xG / shots
-    else:
-        player["conversion_rate"] = math.nan
-        player["xG_per_shot"] = math.nan
+    shots_nonzero = shots > 0
+    df["conversion_rate"] = np.where(shots_nonzero, (goals / shots) * 100, np.nan)
+    df["xG_per_shot"] = np.where(shots_nonzero, xG / shots, np.nan)
 
-    # chance quality created
-    if key_passes > 0:
-        player["assists_per_key_pass"] = assists / key_passes
-        player["xA_per_key_pass"] = xA / key_passes
-    else:
-        player["assists_per_key_pass"] = math.nan        
-        player["xA_per_key_pass"] = math.nan
+    kp_nonzero = key_passes > 0
+    df["assists_per_key_pass"] = np.where(kp_nonzero, assists / key_passes, np.nan)
+    df["xA_per_key_pass"] = np.where(kp_nonzero, xA / key_passes, np.nan)
 
     # ---------- USAGE / INVOLVEMENT ----------
-    if games > 0:
-        player["mins_per_game"] = time_min / games
-        player["goal_contrib_per_game"] = (goals + assists) / games
-    else:
-        player["mins_per_game"] = math.nan
-        player["goal_contrib_per_game"] = math.nan
+    games_nonzero = games > 0
+    df["mins_per_game"] = np.where(games_nonzero, time_min / games, np.nan)
+    df["goal_contrib_per_game"] = np.where(games_nonzero, (goals + assists) / games, np.nan)
 
     # ---------- DISCIPLINE ----------
-    if time_min > 0:
-        factor = 90.0 / time_min
-        player["yellow_per90"] = yellow_cards * factor
-        player["red_per90"] = red_cards * factor
-    else:
-        player["yellow_per90"] = math.nan
-        player["red_per90"] = math.nan
+    mins_nonzero = time_min > 0
+    factor = np.where(mins_nonzero, 90.0 / time_min, np.nan)
+    df["yellow_per90"] = yellow * factor
+    df["red_per90"] = red * factor
 
-    return player
+    return df
 
 # --------------------------- HELPER FUNCTIONS ---------------------------
 
@@ -175,11 +183,37 @@ def display_player_info(player_data):
 def safe_get(series, key):
     return series.get(key, 0)
 
-def format_value(val):
+def format_value(value):
+    """
+    Formats any metric consistently:
+      - NaN -> "—"
+      - Integer -> "5"
+      - Float -> "0.45"
+      - String -> unchanged
+    """
+
+    if value is None:
+        return "—"
+
+    # Handle pandas / numpy NaN
+    if isinstance(value, float) and np.isnan(value):
+        return "—"
+
+    # Try numeric conversion
     try:
-        return f"{float(val):.2f}"
-    except:
-        return str(val)
+        num = float(value)
+
+        # integer-like (3.0 becomes "3")
+        if num.is_integer():
+            return str(int(num))
+
+        # float -> format with 2 decimals
+        return f"{num:.2f}"
+
+    except (ValueError, TypeError):
+        # Non-numeric: keep original (e.g. names, clubs)
+        return str(value)
+
 
 def display_key_stats(title, p1_clean, p2_clean, metrics):
     """

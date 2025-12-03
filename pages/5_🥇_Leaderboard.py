@@ -34,7 +34,7 @@ with col2:
 
 # --------------------------- ALL TIME LEADERBOARD  ---------------------------
 
-st.subheader("All-Time Leaderboards (data starts from 2014/15)")
+st.subheader("All-Time Leaderboards (data since 2014/15)")
 
 with st.spinner("Crunching the numbers… hang tight! ⏳"):
     all_players = build_player_table(df, season="All seasons")
