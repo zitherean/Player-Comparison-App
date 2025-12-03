@@ -277,7 +277,7 @@ def get_position(df, player_name):
     return str(rows["position"].iloc[0])
 
 def select_single_player(df, label="Player", key_prefix="p"):
-    
+    # --- Precompute positions for fast lookup ---
     pos_map = (
         df[["player_name", "position"]]
         .dropna(subset=["position"])
@@ -287,21 +287,32 @@ def select_single_player(df, label="Player", key_prefix="p"):
         .to_dict()
     )
 
-    players = sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
+    placeholder = "— Select a player —"
+    players = [placeholder] + sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
 
-    # Use previously selected value (if it exists) as default
-    default_name = st.session_state.get(f"{key_prefix}_player_name")
-    if default_name in players:
-        default_idx = players.index(default_name)
-    else:
-        default_idx = 0
+    
+    # --- Default selection behaviour ---
+    stored_name = st.session_state.get(f"{key_prefix}_player_name", placeholder)
+    default_idx = players.index(stored_name) if stored_name in players else 0
 
-    player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select", format_func=lambda name: f"{name} ({pos_map.get(name, '')})")
+    # --- How to display each option ---
+    def fmt(name):
+        if name == placeholder:
+            return name
+        pos = pos_map.get(name, "")
+        return f"{name} ({pos})" if pos else name
 
-    # Save the selection so other pages can reuse it
+    # --- Player dropdown ---
+    player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select", format_func=fmt)
+
+    # If user hasn't selected a real player yet, stop here
+    if player == placeholder:
+        return None, None
+
+    # Save valid selection
     st.session_state[f"{key_prefix}_player_name"] = player
 
-    # Filter rows for that player
+    # --- Filter for that player ---
     rows = df[df["player_name"] == player]
 
     # Optional season filter...

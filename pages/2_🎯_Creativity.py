@@ -42,4 +42,7 @@ stats = creativity_stats_per_90 if stat_type == 'Per 90 mins' else creativity_st
 title = "Creativity"
 
 fig = plot_comparison(p1_data, p2_data, p1_label, p2_label, stats, stat_type, title)
-st.plotly_chart(fig, width="stretch")
+if fig is not None:
+    st.plotly_chart(fig, width="stretch")
+else:
+    st.info("Select at least one player to see the chart.")
