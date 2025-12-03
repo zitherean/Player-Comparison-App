@@ -176,22 +176,41 @@ def safe_get(series, key):
     return series.get(key, 0)
 
 def format_value(val):
+    # If it's already a string that isn't numeric, just return it
+    if isinstance(val, str) and not val.replace('.', '', 1).isdigit():
+        return val
+
     try:
-        return f"{float(val):.2f}"
+        num = float(val)
+
+        # If float is actually an integer value, display without decimals
+        if num.is_integer():
+            return str(int(num))
+
+        # Otherwise show 2 decimals
+        return f"{num:.2f}"
+
     except:
+        # Fallback for anything unexpected
         return str(val)
 
+
 def display_key_stats(title, p1_clean, p2_clean, metrics):
-    """
-    """
     st.markdown(f"### {title}")
 
-    cols = st.columns(len(metrics))
+    col_p1, col_p2 = st.columns(2)
 
-    for col, (label, key) in zip(cols, metrics):
-        with col:
-            st.metric(f"{label} ({p1_clean['player_name']})", format_value(safe_get(p1_clean, key)))
-            st.metric(f"{label} ({p2_clean['player_name']})", format_value(safe_get(p2_clean, key)))
+    # Player 1 column
+    with col_p1:
+        st.markdown(f"{p1_clean['player_name']}")
+        for label, key in metrics:
+            st.metric(f"{label} ", format_value(safe_get(p1_clean, key)))
+
+    # Player 2 column
+    with col_p2:
+        st.markdown(f"{p2_clean['player_name']}")
+        for label, key in metrics:
+            st.metric(f"{label} ", format_value(safe_get(p2_clean, key)))
 
 # --------------------------- SEARCH + SELECT ---------------------------
 
