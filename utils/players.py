@@ -197,7 +197,7 @@ def format_value(value):
 
     # Handle pandas / numpy NaN
     if isinstance(value, float) and np.isnan(value):
-        return "—"
+        return 0
 
     # Try numeric conversion
     try:
