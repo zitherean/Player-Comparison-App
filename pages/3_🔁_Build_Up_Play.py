@@ -14,11 +14,12 @@ st.title("🔁 Build Up Play Comparison")
 
 df = load_understat_data(PARQUET_PATH)
 
-p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+col1, col2 = st.columns(2)
 
-st.divider()
+with col1:
+    p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
 
-with st.expander("Add Player 2"):
+with col2: 
     p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
 
 st.divider()
