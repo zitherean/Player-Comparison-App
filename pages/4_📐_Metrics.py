@@ -185,8 +185,8 @@ with table_tab:
     st.markdown("### Full metric comparison")
     st.markdown(
         """
-        This table shows the full set of metrics used in the app for the selected players.  
-        Totals reflect the chosen season (or all league seasons), while per-90 values are recalculated from total minutes played.
+        Explore the full statistical dataset for both players.  
+        The table includes raw season totals as well as normalized per-90 figures.
         """
     )
 
