@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from constants import LEAGUE_NAME_MAP, METRIC_LABELS
-from utils.season import SEASON_NAME_MAP
+from constants import METRIC_LABELS
 from utils.players import enrich_player_metrics, format_value
 
 @st.cache_data

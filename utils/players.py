@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import html
-from constants import LEAGUE_NAME_MAP, SEASON_NAME_MAP
+from constants import LEAGUE_NAME_MAP
 from utils.season import SEASON_NAME_MAP
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
@@ -180,13 +180,10 @@ def display_player_info(player_data):
     )
 
 # --------------------------- KPI DISPLAY METRICS ---------------------------
-def safe_get(series, key):
-    return series.get(key, 0)
-
 def format_value(value):
     """
     Formats any metric consistently:
-      - NaN -> "—"
+      - NaN -> "0"
       - Integer -> "5"
       - Float -> "0.45"
       - String -> unchanged
@@ -275,19 +272,8 @@ def accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"):
     base["season"] = "All seasons"
     return base
 
-def get_position(df, player_name):
-    rows = df[df["player_name"] == player_name]
-
-    # If we don't have that player or no position column, return empty string
-    if rows.empty or "position" not in rows.columns:
-        return ""
-
-    # Safe to access first row now
-    return str(rows["position"].iloc[0])
-
-def select_single_player(df, label="Player", key_prefix="p"):
-    # --- Precompute positions for fast lookup ---
-    pos_map = (
+def build_pos_map(df):
+    return (
         df[["player_name", "position"]]
         .dropna(subset=["position"])
         .drop_duplicates("player_name")
@@ -295,6 +281,10 @@ def select_single_player(df, label="Player", key_prefix="p"):
         .astype(str)
         .to_dict()
     )
+
+
+def select_single_player(df, pos_map, label="Player", key_prefix="p"):
+    # --- Precompute positions for fast lookup ---
 
     placeholder = "— Select a player —"
     players = [placeholder] + sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters

@@ -1,4 +1,4 @@
-from utils.season import get_current_understat_season, SEASON_NAME_MAP, season_to_name
+from utils.season import get_current_understat_season, season_to_name
 
 # --------------------------- CONSTANTS/MAPS ---------------------------
 # Base directory for Parquet files

@@ -1,7 +1,7 @@
 import streamlit as st
 from constants import PARQUET_PATH
 from utils.data_loader import load_understat_data
-from utils.players import select_single_player
+from utils.players import select_single_player, build_pos_map
 from utils.charts import plot_comparison
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
@@ -13,14 +13,15 @@ st.title("🔁 Build Up Play Comparison")
 # --------------------------- LOAD DATA & SELECT PLAYERS ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+pos_map = build_pos_map(df)
 
 col1, col2 = st.columns(2)
 
 with col1:
-    p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+    p1_data, p1_label = select_single_player(df, pos_map, label="Player 1", key_prefix="p1")
 
 with col2: 
-    p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
+    p2_data, p2_label = select_single_player(df, pos_map, label="Player 2", key_prefix="p2")
 
 st.divider()
 

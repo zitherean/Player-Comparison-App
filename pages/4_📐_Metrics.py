@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from utils.data_loader import load_understat_data
-from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics
-from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP, SEASON_NAME_MAP
+from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics, build_pos_map
+from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP
+from utils.season import SEASON_NAME_MAP
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
 
@@ -14,6 +15,7 @@ st.title("📐 Metrics")
 # --------------------------- PLAYER SELECTION ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+pos_map = build_pos_map(df)
 
 col1, col2 = st.columns(2)
 
@@ -21,7 +23,7 @@ col1, col2 = st.columns(2)
 p2_data, p2_label, p2_clean = None, None, None
 
 with col1:
-    p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+    p1_data, p1_label = select_single_player(df, pos_map, label="Player 1", key_prefix="p1")
 
     # If no Player 1 selected, stop the page here
     if p1_data is None:
@@ -33,7 +35,7 @@ with col1:
     p1_clean = enrich_player_metrics(p1_clean)
 
 with col2:
-    p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
+    p2_data, p2_label = select_single_player(df, pos_map, label="Player 2", key_prefix="p2")
 
     if p2_data is not None:
         p2_clean = p2_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
@@ -46,6 +48,7 @@ st.divider()
 overview_tab, table_tab = st.tabs(["Overview", "Detailed table"])
 
 # --------------------------- PLAYER HEADER SECTION ---------------------------
+
 with overview_tab:
     col_p1, col_p2 = st.columns(2)
 
