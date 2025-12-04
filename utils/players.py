@@ -214,8 +214,6 @@ def format_value(value):
         # Non-numeric: keep original (e.g. names, clubs)
         return str(value)
 
-
-
 def display_key_stats(title, p1_clean, p2_clean=None, metrics=None):
     """
     Show key stats for one or two players.
@@ -247,8 +245,6 @@ def display_key_stats(title, p1_clean, p2_clean=None, metrics=None):
             st.metric(f"{label} ({p1_clean['player_name']})", format_value(p1_clean.get(key, 0)))
 
 # --------------------------- SEARCH + SELECT ---------------------------
-
-# utils/players.py
 
 def accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"):
     # Sum numeric columns
@@ -318,8 +314,10 @@ def select_single_player(df, label="Player", key_prefix="p"):
     # --- Player dropdown ---
     player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select", format_func=fmt)
 
-    # If user hasn't selected a real player yet, stop here
+    # If user hasn't selected a real player yet, save selection and stop here
     if player == placeholder:
+        st.session_state[f"{key_prefix}_player_name"] = placeholder
+        st.session_state.pop(f"{key_prefix}_season_value", None)
         return None, None
 
     # Save valid selection
