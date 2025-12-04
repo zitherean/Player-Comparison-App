@@ -16,20 +16,29 @@ st.title("📐 Metrics")
 df = load_understat_data(PARQUET_PATH)
 
 col1, col2 = st.columns(2)
+
+# Initialise P2 as optional
+p2_data, p2_label, p2_clean = None, None, None
+
 with col1:
     p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+
+    # If no Player 1 selected, stop the page here
+    if p1_data is None:
+        st.info("Select at least one player to see the metrics.")
+        st.stop()
+
+    # Safe to use p1_data now
     p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
     p1_clean = enrich_player_metrics(p1_clean)
 
-    p2_data, p2_label, p2_clean = None, None, None
-
 with col2:
     p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
-    
+
     if p2_data is not None:
         p2_clean = p2_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
         p2_clean = enrich_player_metrics(p2_clean)
-    
+
 st.divider()
 
 # --------------------------- TAB ---------------------------
@@ -44,9 +53,10 @@ with overview_tab:
         display_player_info(p1_clean)
 
     with col_p2:
-        display_player_info(p2_clean)
-
-    st.divider()
+        if p2_clean is not None:
+            display_player_info(p2_clean)
+        else:
+            st.info("Select Player 2 to see a side-by-side comparison.")
 
 # --------------------------- KEY STATS TOTAL ---------------------------
 

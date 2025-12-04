@@ -216,22 +216,35 @@ def format_value(value):
 
 
 
-def display_key_stats(title, p1_clean, p2_clean, metrics):
+def display_key_stats(title, p1_clean, p2_clean=None, metrics=None):
+    """
+    Show key stats for one or two players.
+    - p1_clean: required
+    - p2_clean: optional (None = single-player mode)
+    - metrics: list of (label, key)
+    """
+    if metrics is None:
+        metrics = []
+
     st.markdown(f"### {title}")
 
-    col_p1, col_p2 = st.columns(2)
+    # Two-player layout
+    if p2_clean is not None:
+        col_p1, col_p2 = st.columns(2)
 
-    # Player 1 column
-    with col_p1:
-        st.markdown(f"{p1_clean['player_name']}")
-        for label, key in metrics:
-            st.metric(f"{label} ", format_value(safe_get(p1_clean, key)))
+        with col_p1:
+            for label, key in metrics:
+                st.metric(f"{label} ({p1_clean['player_name']})", format_value(p1_clean.get(key, 0)))
 
-    # Player 2 column
-    with col_p2:
-        st.markdown(f"{p2_clean['player_name']}")
+        with col_p2:
+            for label, key in metrics:
+                st.metric(f"{label} ({p2_clean['player_name']})", format_value(p2_clean.get(key, 0)))
+
+    # Single-player layout
+    else:
+        # Just one column for Player 1
         for label, key in metrics:
-            st.metric(f"{label} ", format_value(safe_get(p2_clean, key)))
+            st.metric(f"{label} ({p1_clean['player_name']})", format_value(p1_clean.get(key, 0)))
 
 # --------------------------- SEARCH + SELECT ---------------------------
 
