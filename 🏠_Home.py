@@ -41,18 +41,15 @@ with col5:
 
 st.subheader("More Tools")
 
-st.markdown("""If you’re looking for specific profiles, use **Find Players** to search and filter the dataset.   
-            If you're unsure what a metric means, check the **Glossary** for short explanations.""")
+st.markdown("""If you’re looking for specific profiles, use **Find Players** to search and filter the dataset.""")
 
-colA, colB = st.columns(2)
+if st.button("🔍 Find Players"):
+    st.switch_page("pages/6_🔍_Find_Players.py")
 
-with colA:
-    if st.button("🔍 Find Players"):
-        st.switch_page("pages/6_🔍_Find_Players.py")
+st.markdown("""If you're unsure what a metric means, check the **Glossary** for short explanations.""")
 
-with colB:
-    if st.button("📘 Glossary"):
-        st.switch_page("pages/7_📘_Glossary.py")
+if st.button("📘 Glossary"):
+    st.switch_page("pages/7_📘_Glossary.py")
 
 st.divider()
 
