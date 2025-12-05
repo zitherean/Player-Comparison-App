@@ -78,5 +78,5 @@ for group_name, group_metrics in metrics.items():
     for display_name, definition in group_metrics:
         st.markdown(f"**{display_name}**  \n{definition}")
 
-st.markdown("---")
+st.divider()
 st.caption("Tip: when in doubt, check how a metric behaves per 90 minutes to compare players with different playing time.")
