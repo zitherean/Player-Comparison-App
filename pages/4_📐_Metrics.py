@@ -50,12 +50,10 @@ st.markdown(
     <style>
     /* Change font size of tab labels */
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-        font-size: 2.2rem !important;   /* adjust as you like */
-        font-weight: bold !important
+        font-size: 1.5rem !important; 
     }
 
-    /* (Optional) add some extra padding to make tabs look bigger */
-        .stTabs [data-baseweb="tab"] {
+    .stTabs [data-baseweb="tab"] {
         padding-top: 15px;
         padding-bottom: 15px;
     }
