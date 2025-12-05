@@ -45,6 +45,25 @@ st.divider()
 
 # --------------------------- TAB ---------------------------
 
+st.markdown(
+    """
+    <style>
+    /* Change font size of tab labels */
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        font-size: 2.2rem !important;   /* adjust as you like */
+        font-weight: bold !important
+    }
+
+    /* (Optional) add some extra padding to make tabs look bigger */
+        .stTabs [data-baseweb="tab"] {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 overview_tab, table_tab = st.tabs(["Overview", "Detailed table"])
 
 # --------------------------- PLAYER HEADER SECTION ---------------------------
