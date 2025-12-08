@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from utils.data_loader import load_understat_data
-from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics
-from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP, SEASON_NAME_MAP
+from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics, build_pos_map
+from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP
+from utils.season import SEASON_NAME_MAP
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
 
@@ -14,22 +15,32 @@ st.title("📐 Metrics")
 # --------------------------- PLAYER SELECTION ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+pos_map = build_pos_map(df)
 
-p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
-p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
-p1_clean = enrich_player_metrics(p1_clean)
+col1, col2 = st.columns(2)
 
+# Initialise P2 as optional
 p2_data, p2_label, p2_clean = None, None, None
 
-st.divider()
+with col1:
+    p1_data, p1_label = select_single_player(df, pos_map, label="Player 1", key_prefix="p1")
 
-with st.expander("Add Player 2"):
-    p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
-    
+    # If no Player 1 selected, stop the page here
+    if p1_data is None:
+        st.info("Select at least one player to see the metrics.")
+        st.stop()
+
+    # Safe to use p1_data now
+    p1_clean = p1_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
+    p1_clean = enrich_player_metrics(p1_clean)
+
+with col2:
+    p2_data, p2_label = select_single_player(df, pos_map, label="Player 2", key_prefix="p2")
+
     if p2_data is not None:
         p2_clean = p2_data.replace({**LEAGUE_NAME_MAP, **SEASON_NAME_MAP})
         p2_clean = enrich_player_metrics(p2_clean)
-    
+
 st.divider()
 
 # --------------------------- TAB ---------------------------
@@ -37,6 +48,7 @@ st.divider()
 overview_tab, table_tab = st.tabs(["Overview", "Detailed table"])
 
 # --------------------------- PLAYER HEADER SECTION ---------------------------
+
 with overview_tab:
     col_p1, col_p2 = st.columns(2)
 
@@ -44,9 +56,10 @@ with overview_tab:
         display_player_info(p1_clean)
 
     with col_p2:
-        display_player_info(p2_clean)
-
-    st.divider()
+        if p2_clean is not None:
+            display_player_info(p2_clean)
+        else:
+            st.info("Select Player 2 to see a side-by-side comparison.")
 
 # --------------------------- KEY STATS TOTAL ---------------------------
 
@@ -88,9 +101,10 @@ with overview_tab:
 # --------------------------- CREATIVITY ---------------------------
 
     metrics_creation = [
+        ("Assists per Key Pass", "assists_per_key_pass"), 
+        ("xA per Key Pass", "xA_per_key_pass"),
         ("Key Passes / 90", "key_passes_per90"),
         ("xA / 90", "xA_per90"),
-        ("xA per Key Pass", "xA_per_key_pass"),
     ]
 
     display_key_stats(title="Creativity & chance creation", p1_clean=p1_clean, p2_clean=p2_clean, metrics=metrics_creation)
@@ -184,8 +198,8 @@ with table_tab:
     st.markdown("### Full metric comparison")
     st.markdown(
         """
-        This table shows the full set of metrics used in the app for the selected players.  
-        Totals reflect the chosen season (or all league seasons), while per-90 values are recalculated from total minutes played.
+        Explore the full statistical dataset for both players.  
+        The table includes raw season totals as well as normalized per-90 figures.
         """
     )
 

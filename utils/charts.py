@@ -6,34 +6,79 @@ from constants import METRIC_LABELS
 
 def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type, title):
     """
-    Create a horizontal bar chart comparing two players for the given list of stats.
+    Create a horizontal bar chart comparing one or two players for the given list of stats.
     - stats: list of column names to compare
     - title: section title (e.g. "Finishing", "Creativity")
     """
-    plot_df = pd.DataFrame({'stat': stats * 2,
-                        'series': [label1] * len(stats) + [label2] * len(stats),
-                        'value': [player1_data[stat] for stat in stats] + [player2_data[stat] for stat in stats]})
-    
+
+    # If absolutely no players, don't plot
+    if player1_data is None and player2_data is None:
+        return None
+
+    rows = []
+
+    # Add Player 1 rows if available
+    if player1_data is not None:
+        for stat in stats:
+            rows.append({
+                "stat": stat,
+                "series": label1,
+                "value": player1_data[stat],
+            })
+
+    # Add Player 2 rows if available
+    if player2_data is not None:
+        for stat in stats:
+            rows.append({
+                "stat": stat,
+                "series": label2,
+                "value": player2_data[stat],
+            })
+
+    plot_df = pd.DataFrame(rows)
+
     # Round numeric values for cleaner display
-    plot_df['value'] = plot_df['value'].round(2)
+    plot_df["value"] = plot_df["value"].round(2)
 
     # Replace technical column names with readable labels
-    plot_df['stat_label'] = plot_df['stat'].map(lambda s: METRIC_LABELS.get(s, s))
+    plot_df["stat_label"] = plot_df["stat"].map(lambda s: METRIC_LABELS.get(s, s))
 
+    # Axis labels depending on stat_type
+    if stat_type == "Per 90 mins":
+        labels = {"value": "Per 90", "stat_label": "Metric", "series": "Legend"}
+    else:
+        labels = {"value": "Total", "stat_label": "Metric", "series": "Legend"}
+
+    # Subtitle text (for info, optional)
+    if player1_data is not None and player2_data is not None:
+        subtitle = f"{player1_data['player_name']} vs {player2_data['player_name']}"
+    elif player1_data is not None:
+        subtitle = f"{player1_data['player_name']}"
+    else:
+        subtitle = f"{player2_data['player_name']}"
+
+    # Build figure
     fig = px.bar(
-        plot_df,    
-        x='value',
-        y='stat_label',
-        color='series',
-        barmode='group',
-        orientation='h',
-        labels={'value': 'Per 90', 'stat_label': 'Metric', 'series': 'Legend'} if stat_type == 'Per 90 mins' else {'value': 'Total', 'stat_label': 'Metric', 'series': 'Legend'},
+        plot_df,
+        x="value",
+        y="stat_label",
+        color="series",
+        barmode="group",
+        orientation="h",
+        labels=labels,
         height=max(350, 80 * len(stats)),
-        title=title,
-        subtitle=f"{player1_data['player_name']} vs {player2_data['player_name']}"
+        title=None,  # we'll set a richer title layout below
     )
-    
-    # Center the title for aesthetics
-    fig.update_layout(title={'text': title, 'x': 0.5, 'xanchor': 'center', 'yanchor': 'top'})
+
+    # Center title and include subtitle (if you like)
+    title_text = title if not subtitle else f"{title}<br><sup>{subtitle}</sup>"
+    fig.update_layout(
+        title={
+            "text": title_text,
+            "x": 0.5,
+            "xanchor": "center",
+            "yanchor": "top",
+        }
+    )
 
     return fig

@@ -3,14 +3,16 @@ import aiohttp
 import pandas as pd
 from understat import Understat
 from utils.partitioned_parquet import write_partitioned_players
-import datetime
+from utils.season import get_current_understat_season
 
 # Max number of concurrent requests (both semaphore and TCP connector use this) 
 # Be friendly to Understat's servers
 CONCURRENCY = 6
 
 LEAGUES = ["EPL", "La_liga", "Bundesliga", "Serie_A", "Ligue_1"] # top 5 leagues according to Understat API
-SEASONS = list(range(2014, 2025))  # 2014 = 2014/15 ... up to 2025/26 update for next season
+
+current_season = get_current_understat_season()
+SEASONS = list(range(2014, current_season + 1))  # 2014 = 2014/15 ... up to 2025/26 update for next season
 
 # Columns expected to be numeric in raw player totals
 NUMBER_COLS = ["games", "time", "goals", "xG", "shots", "assists", 
@@ -20,6 +22,7 @@ PER_90_COLS = ["goals", "xG", "shots", "assists", "xA",
                "key_passes", "npg", "npxG", "xGChain", "xGBuildup"]
 
 # ---------------------------HELPER FUNCTIONS---------------------------
+
 # helper to convert columns to numeric
 def _to_num(df, cols):
     """Coerce selected columns to numeric (invalid values become NaN)."""

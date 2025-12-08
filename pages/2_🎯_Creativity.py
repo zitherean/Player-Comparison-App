@@ -1,7 +1,7 @@
 import streamlit as st
 from constants import PARQUET_PATH
 from utils.data_loader import load_understat_data
-from utils.players import select_single_player
+from utils.players import select_single_player, build_pos_map
 from utils.charts import plot_comparison
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
@@ -13,13 +13,15 @@ st.title("🎯 Creativity Comparison")
 # --------------------------- LOAD DATA & SELECT PLAYERS ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+pos_map = build_pos_map(df)
 
-p1_data, p1_label = select_single_player(df, label="Player 1", key_prefix="p1")
+col1, col2 = st.columns(2)
 
-st.divider()
+with col1:
+    p1_data, p1_label = select_single_player(df, pos_map, label="Player 1", key_prefix="p1")
 
-with st.expander("Add Player 2"):
-    p2_data, p2_label = select_single_player(df, label="Player 2", key_prefix="p2")
+with col2:
+    p2_data, p2_label = select_single_player(df, pos_map, label="Player 2", key_prefix="p2")
 
 st.divider()
 
@@ -41,4 +43,7 @@ stats = creativity_stats_per_90 if stat_type == 'Per 90 mins' else creativity_st
 title = "Creativity"
 
 fig = plot_comparison(p1_data, p2_data, p1_label, p2_label, stats, stat_type, title)
-st.plotly_chart(fig, width="stretch")
+if fig is not None:
+    st.plotly_chart(fig, width="stretch")
+else:
+    st.info("Select at least one player to see the chart.")
