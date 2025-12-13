@@ -22,7 +22,7 @@ df = clean_html_entities(df, ["player_name", "team_title"])
 st.subheader(f"Top Performers in the {CURRENT_SEASON_NAME} Season")
 
 with st.spinner("Crunching the numbers… hang tight! ⏳"):
-    current_season_players = build_player_table(df, season="2024")
+    current_season_players = build_player_table(df, season=CURRENT_SEASON)
 
 col1, col2 = st.columns(2)
 
