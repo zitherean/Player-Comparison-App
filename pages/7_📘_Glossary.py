@@ -79,4 +79,4 @@ for group_name, group_metrics in metrics.items():
         st.markdown(f"**{display_name}**  \n{definition}")
 
 st.divider()
-st.caption("Tip: when in doubt, check how a metric behaves per 90 minutes to compare players with different playing time.")
+st.info("Check how a metric behaves per 90 minutes to compare players with different playing time.")

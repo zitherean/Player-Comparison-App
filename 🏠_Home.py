@@ -55,9 +55,9 @@ st.divider()
 
 # --------------------------- FOOTER ---------------------------
 
-st.markdown("##### Disclaimer")
+st.caption("###### Disclaimer")
 
-st.markdown("""This app is intended for informational and educational purposes only. 
+st.caption("""This app is intended for informational and educational purposes only. 
             The developer has no affiliation with Understat.""")
 
-st.markdown("© 2025 Sami Finkbeiner") 
+st.caption("© 2025 Sami Finkbeiner") 
