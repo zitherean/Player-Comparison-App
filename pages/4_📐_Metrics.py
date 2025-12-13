@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from utils.data_loader import load_understat_data
+from utils.text import clean_html_entities
 from utils.players import select_single_player, display_player_info, display_key_stats, format_value, enrich_player_metrics, build_pos_map
 from constants import PARQUET_PATH, METRIC_LABELS, LEAGUE_NAME_MAP
 from utils.season import SEASON_NAME_MAP
@@ -15,6 +16,7 @@ st.title("📐 Metrics")
 # --------------------------- PLAYER SELECTION ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+df = clean_html_entities(df, ["player_name", "team_title"])
 pos_map = build_pos_map(df)
 
 col1, col2 = st.columns(2)

@@ -2,6 +2,7 @@ import streamlit as st
 from constants import PARQUET_PATH, CURRENT_SEASON_NAME, CURRENT_SEASON
 from utils.data_loader import load_understat_data
 from utils.leaderboard import display_leaderboard, build_player_table
+from utils.text import clean_html_entities
 
 ALL_SEASON_STRING = "all seasons"
 
@@ -14,13 +15,14 @@ st.title("🥇 Leaderboard")
 # --------------------------- LOAD DATA ---------------------------
 
 df = load_understat_data(PARQUET_PATH)
+df = clean_html_entities(df, ["player_name", "team_title"])
 
 # --------------------------- CURRENT SEASON LEADERBOARD ---------------------------
 
 st.subheader(f"Top Performers in the {CURRENT_SEASON_NAME} Season")
 
 with st.spinner("Crunching the numbers… hang tight! ⏳"):
-    current_season_players = build_player_table(df, season=CURRENT_SEASON)
+    current_season_players = build_player_table(df, season="2024")
 
 col1, col2 = st.columns(2)
 

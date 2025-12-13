@@ -93,108 +93,6 @@ def _enrich_player_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# --------------------------- HELPER FUNCTIONS ---------------------------
-
-def safe_index(options, value, fallback=0):
-    """Safely return index of value in list; fallback to given index if missing."""
-    try:
-        return options.index(value)
-    except Exception:
-        return fallback if options else 0
-
-# --------------------------- PLAYER SELECTION FUNCTION ---------------------------
-def player_search(df):
-    """
-    Widget group to search players by:
-    - Player name (optional, with text search)
-    - League, Season, Team (any combination)
-
-    Returns:
-        filtered_df (pd.DataFrame): DataFrame filtered according to the selected criteria.
-    """
-
-    # --- BASE OPTIONS FROM DATAFRAME ---
-    all_players = sorted(html.unescape(name) for name in df["player_name"].unique())
-    all_seasons = sorted(df["season"].unique(), reverse=True)
-    all_leagues = sorted(df["league"].unique())
-    all_teams = sorted(df["team_title"].unique())
-
-    # ---------------- RESET BUTTON ----------------
-    reset = st.button("🔁 Reset filters")
-
-    if reset:
-        # Clear text input
-        st.session_state["player_name_query"] = ""
-
-        # Reset dropdowns to "All ..." options
-      
-        st.session_state["season_select"] = "All seasons"
-        st.session_state["league_select"] = "All leagues"
-        st.session_state["team_select"] = "All teams"
-
-        # Clear any dynamic player select keys
-        for key in list(st.session_state.keys()):
-            if key.startswith("player_select_"):
-                del st.session_state[key]
-                st.session_state[key] = "All players"
-        st.rerun()
-
-    # ---------------- NAME SEARCH ----------------
-    st.subheader("Search by player name")
-
-    name_query = st.text_input("Type part of the player's name (optional)", value="", key="player_name_query", placeholder="e.g. Salah, De Bruyne, Messi...")
-
-    if name_query:
-        # Filter list of players shown in the selectbox
-        filtered_player_options = [p for p in all_players if name_query.lower() in p.lower()]
-        if not filtered_player_options:
-            st.info("No players found matching that name. Try adjusting your search or using the filters below.")
-            filtered_player_options = all_players  # fallback
-    else:
-        filtered_player_options = all_players
-
-    # Default index for the selectbox
-    default_index = 1 if (name_query and filtered_player_options) else 0
-
-    player = st.selectbox("Select player (or leave as 'All players' to use only filters)", options=["All players"] + filtered_player_options, key=f"player_select_{name_query}", index=default_index)
-
-    st.markdown("— or filter using league, season, and team —")
-
-    # ---------------- FILTERS: LEAGUE / SEASON / TEAM ----------------
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        season = st.selectbox("Season", options=["All seasons"] + all_seasons, key="season_select", format_func=lambda x: SEASON_NAME_MAP.get(x, x))
-
-    with col2:
-        league = st.selectbox("League", options=["All leagues"] + all_leagues, key="league_select", format_func=lambda x: LEAGUE_NAME_MAP.get(x, x))
-
-    with col3:
-        team = st.selectbox("Team", options=["All teams"] + all_teams, key="team_select")
-
-    # ---------------- APPLY FILTERS TO DATAFRAME ----------------
-    filtered_df = df.copy()
-
-    # Player filter (takes precedence if chosen)
-    if player != "All players":
-        filtered_df = filtered_df[filtered_df["player_name"] == player]
-
-    # Additional filters (work whether or not a player is chosen)
-    if season != "All seasons":
-        filtered_df = filtered_df[filtered_df["season"] == season]
-
-    if league != "All leagues":
-        filtered_df = filtered_df[filtered_df["league"] == league]
-
-    if team != "All teams":
-        filtered_df = filtered_df[filtered_df["team_title"] == team]
-
-    unique_players = filtered_df["player_name"].nunique()
-
-    st.markdown(f"🔎 Found **{(unique_players)}** matching players.")
-
-    return filtered_df, player
-
 # --------------------------- DISPLAY METRICS ---------------------------
 
 def display_player_info(player_data):
@@ -327,7 +225,7 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
     # --- Precompute positions for fast lookup ---
 
     placeholder = "— Select a player —"
-    players = [placeholder] + sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
+    players = [placeholder] + sorted(df["player_name"].unique()) # unescape to get rid of weird characters
 
     
     # --- Default selection behaviour ---
