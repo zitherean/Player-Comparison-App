@@ -93,68 +93,6 @@ def _enrich_player_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# --------------------------- HELPER FUNCTIONS ---------------------------
-
-def safe_index(options, value, fallback=0):
-    """Safely return index of value in list; fallback to given index if missing."""
-    try:
-        return options.index(value)
-    except Exception:
-        return fallback if options else 0
-
-# --------------------------- PLAYER SELECTION FUNCTION ---------------------------
-
-def player_scope(df, scope_name, *, default_season=None, default_player=None):
-    """
-    Displays selection boxes for league, season, team, and player.
-    Returns the chosen player's data row and label for chart display.
-    """
-    st.subheader(scope_name)
-
-    # League
-    leagues = ["All leagues"] + sorted(df['league'].unique())
-    league = st.selectbox(f"League ({scope_name})", leagues, key=f"{scope_name}_league", index=0,
-                        format_func=lambda x: x if x == "All leagues" else LEAGUE_NAME_MAP.get(x, x))
-    df_league = df if league == "All leagues" else df[df['league'] == league]
-    
-    # Season
-    seasons = sorted(map(str, df_league['season'].unique()), reverse=True)  # latest first
-    default_season_str = str(default_season) if default_season is not None else seasons[0]
-    season = st.selectbox(f"Season ({scope_name})", seasons, key=f"{scope_name}_season", index=safe_index(seasons, default_season_str, fallback=0))
-    df_league_season = df_league[df_league['season'] == season]
-
-    # Team
-    teams = ["All teams"] + sorted(df_league_season['team_title'].unique())
-    team = st.selectbox(f"Team ({scope_name})", teams, key=f"{scope_name}_team", index=0)
-    df_league_season_team = df_league_season if team == "All teams" else df_league_season[df_league_season['team_title'] == team]
-    
-    # Player
-    players = sorted(df_league_season_team['player_name'].unique())
-    if isinstance(default_player, str):
-        player_idx = safe_index(players, default_player, fallback=0)
-    else:
-        player_idx = 0
-    player = st.selectbox(f"Player ({scope_name})", players, key=f"{scope_name}_player", index=player_idx)
-
-    # Filter for chosen player (within selected team if applicable)
-    if team == "All teams":
-        rows = df_league_season[df_league_season['player_name'] == player]
-    else: 
-        rows = df_league_season_team[df_league_season_team['player_name'] == player]
-
-    if rows.empty:
-        st.warning(f"No data for {player} in {league} {season}.")
-        st.stop()
-
-    # Extract first record (players are unique per team-season)
-    row = rows.iloc[0].copy()   
-
-    # Format display label
-    team_for_label = f", {row['team_title']}"
-    label = f"{row['player_name']} ({season}{team_for_label})"
-
-    return row, label
-
 # --------------------------- DISPLAY METRICS ---------------------------
 
 def display_player_info(player_data):
@@ -287,7 +225,7 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
     # --- Precompute positions for fast lookup ---
 
     placeholder = "— Select a player —"
-    players = [placeholder] + sorted([html.unescape(name) for name in df["player_name"].unique()]) # unescape to get rid of weird characters
+    players = [placeholder] + sorted(df["player_name"].unique()) # unescape to get rid of weird characters
 
     
     # --- Default selection behaviour ---

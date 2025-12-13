@@ -52,3 +52,20 @@ METRIC_LABELS = {
     "conversion_rate": "Conversion Rate (%)",
     "assists_per_key_pass": "Assists per Key Pass",     
 }
+
+STAT_FILTERS = [
+    ("games", "min_games"),
+    ("time", "min_minutes"),
+    ("goals", "min_goals"),
+    ("assists", "min_assists"),
+    ("goals_per90", "min_goals_per90"),
+    ("assists_per90", "min_assists_per90"),
+    ("xG", "min_xg"),
+    ("xA", "min_xa"),
+    ("xG_per90", "min_xg_per90"),
+    ("xA_per90", "min_xa_per90"),
+    ("xGChain", "min_xg_chain"),
+    ("xGBuildup", "min_xg_buildup"),
+    ("xGChain_per90", "min_xg_chain_per90"),
+    ("xGBuildup_per90", "min_xg_buildup_per90"),
+]
