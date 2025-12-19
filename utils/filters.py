@@ -5,13 +5,32 @@ from utils.players import accumulate_player_rows
 
 # --------------------------- FILTER ---------------------------
 
-def multiselect_filter(label, series, sort_reverse=False):
+def multiselect_filter(label, series, key, sort_reverse=False):
     options = sorted(series.unique(), reverse=sort_reverse)
-    return st.multiselect(
-        label,
-        options=options,
-        default=[]
-    )
+
+    store_key = f"__store__{key}"        
+    default = st.session_state.get(store_key, [])
+
+    # keep defaults valid
+    default = [v for v in default if v in options]
+
+    value = st.multiselect(label, options=options, default=default, key=key)
+
+    # persist selection for next time you visit the page
+    st.session_state[store_key] = value
+    return value
+
+def number_input_persist(label, key, min_value, max_value, value, step=1):
+    # initialize once
+    
+    store_key = f"__store__{key}"
+    initial = st.session_state.get(store_key, value)
+
+    val = st.number_input(label, value=initial, min_value=min_value, max_value=max_value, step=step, key=key)
+
+    # persist selection for next time you visit the page
+    st.session_state[store_key] = val
+    return val
 
 def apply_list_filter(df, column, selected):
     if selected:

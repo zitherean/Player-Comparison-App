@@ -69,3 +69,18 @@ STAT_FILTERS = [
     ("xGChain_per90", "min_xg_chain_per90"),
     ("xGBuildup_per90", "min_xg_buildup_per90"),
 ]
+
+RESET_KEYS = {
+        "min_games", "min_minutes", "min_goals", "min_assists",
+        "min_goals_per90", "min_assists_per90",
+        "min_xg", "min_xa", "min_xg_per90", "min_xa_per90",
+        "min_xg_chain", "min_xg_buildup",
+        "min_xg_chain_per90", "min_xg_buildup_per90",
+}
+
+FLOAT_KEYS = {
+    "min_goals_per90", "min_assists_per90",
+    "min_xg", "min_xa", "min_xg_per90", "min_xa_per90",
+    "min_xg_chain", "min_xg_buildup",
+    "min_xg_chain_per90", "min_xg_buildup_per90",
+}
