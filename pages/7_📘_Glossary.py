@@ -8,10 +8,7 @@ st.title("📘 Glossary")
 
 st.markdown(
     """
-    This page explains the metrics used throughout the app.
-
-    **General notes**
-    - All values ending in **“per 90”** are scaled to a full 90-minute match.
+    **General notes** 
     - **Non-penalty (NP)** metrics exclude goals and xG from penalty kicks.
     """
 )
@@ -78,5 +75,30 @@ for group_name, group_metrics in metrics.items():
     for display_name, definition in group_metrics:
         st.markdown(f"**{display_name}**  \n{definition}")
 
+st.info("Check how a metric behaves per 90 minutes to compare players with different playing time.")
+
 st.divider()
-st.caption("Tip: when in doubt, check how a metric behaves per 90 minutes to compare players with different playing time.")
+
+# --------------------------- PLAYER POSITIONS ---------------------------
+
+st.subheader("Player positions")
+
+st.markdown(
+    """
+    Positions are shown using short letter codes.  
+    Multiple letters indicate **hybrid roles**, and **S** indicates a **substitute appearance**.
+    """
+)
+
+positions = [
+    ("GK", "Goalkeeper"),
+    ("D", "Defender"),
+    ("M", "Midfielder"),
+    ("F", "Forward"),
+    ("S", "Substitute appearance"),
+]
+
+for code, description in positions:
+    st.markdown(f"**{code}** -- {description}")
+
+st.info("Player positions are based on Understat's classification and may not reflect exact tactical roles.")
