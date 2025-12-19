@@ -46,7 +46,7 @@ st.markdown("""If you’re looking for specific profiles, use **Find Players** t
 if st.button("🔍 Find Players"):
     st.switch_page("pages/6_🔍_Find_Players.py")
 
-st.markdown("""If you're unsure what a metric means, check the **Glossary** for short explanations.""")
+st.markdown("""If you're unsure about player positions or metrics, check the **Glossary** for short explanations.""")
 
 if st.button("📘 Glossary"):
     st.switch_page("pages/7_📘_Glossary.py")
