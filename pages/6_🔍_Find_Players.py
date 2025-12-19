@@ -1,8 +1,8 @@
 import streamlit as st
-from constants import PARQUET_PATH, LEAGUE_NAME_MAP, METRIC_LABELS, STAT_FILTERS
+from constants import PARQUET_PATH, LEAGUE_NAME_MAP, METRIC_LABELS, STAT_FILTERS, FLOAT_KEYS, RESET_KEYS
 from utils.data_loader import load_understat_data
-from utils.players import enrich_player_metrics, accumulate_player_rows
-from utils.filters import multiselect_filter, apply_list_filter, apply_stat_filters, get_result_dataframe
+from utils.players import enrich_player_metrics
+from utils.filters import multiselect_filter, number_input_persist, apply_list_filter, apply_stat_filters, get_result_dataframe
 from utils.text import clean_html_entities
 from utils.season import SEASON_NAME_MAP
 
@@ -26,31 +26,25 @@ st.subheader("Filters")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    selected_seasons = multiselect_filter("Season(s)", df["season"], sort_reverse=True)
+    selected_seasons = multiselect_filter("Season(s)", df["season"], f"seasons_multifilter", sort_reverse=True)
 
 with col2:
-    selected_leagues = multiselect_filter("League(s)", df["league"]) 
+    selected_leagues = multiselect_filter("League(s)", df["league"], f"leagues_multifilter")
 
 with col3:
-    selected_positions = multiselect_filter("Position(s)", df["position"])
+    selected_positions = multiselect_filter("Position(s)", df["position"], f"positions_multifilter")
     
 with col4:
-    selected_teams = multiselect_filter("Team(s)", df["team_title"]) 
+    selected_teams = multiselect_filter("Team(s)", df["team_title"], f"teams_multifilter")
 
-# --------------------------- STAT FILTERS + RESET BUTTON ---------------------------------
+# --------------------------- RESET BUTTON ---------------------------------
 
 st.subheader("Stat filters")
 
 if st.button("🔄 Reset stat filters"):
-    reset_keys = [
-        "min_games", "min_minutes", "min_goals", "min_assists",
-        "min_goals_per90", "min_assists_per90",
-        "min_xg", "min_xa", "min_xg_per90", "min_xa_per90",
-        "min_xg_chain", "min_xg_buildup",
-        "min_xg_chain_per90", "min_xg_buildup_per90",
-    ]
-    for key in reset_keys:
-        st.session_state[key] = 0
+    for key in RESET_KEYS:
+        st.session_state[key] = 0.0 if key in FLOAT_KEYS else 0
+        st.session_state[f"__store__{key}"] = 0.0 if key in FLOAT_KEYS else 0         
 
 # --------------------------- BASIC STAT FILTERS ---------------------------------
 
@@ -58,36 +52,36 @@ with st.expander("Basic stat filters"):
     col_s1, col_s2 = st.columns(2)
     
     with col_s1:
-        min_games = st.number_input(
+        min_games = number_input_persist(
             "Min games played",
+            key="min_games",
             min_value=0,
             max_value=int(df["games"].max()),
             value=0,
-            key="min_games",
         )
-        min_minutes = st.number_input(
+        min_minutes = number_input_persist(
             "Min minutes played",
+            key="min_minutes",
             min_value=0,
             max_value=int(df["time"].max()),
             value=0,
             step=100,
-            key="min_minutes",
         )
 
     with col_s2:
-        min_goals = st.number_input(
+        min_goals = number_input_persist(
             "Min goals",
+            key="min_goals",
             min_value=0,
             max_value=int(df["goals"].max()),
             value=0,
-            key="min_goals",
         )
-        min_assists = st.number_input(
+        min_assists = number_input_persist(
             "Min assists",
+            key="min_assists",
             min_value=0,
             max_value=int(df["assists"].max()),
             value=0,
-            key="min_assists",
         )
 
 # --------------------------- ADVANCED STAT FILTERS ---------------------------------
@@ -96,98 +90,98 @@ with st.expander("Advanced stat filters", expanded=False):
     col_s3, col_s4, col_s5, col_s6, col_s7 = st.columns(5)
 
     with col_s3:
-        min_goals_per90 = st.number_input(
+        min_goals_per90 = number_input_persist(
             "Min goals per 90",
+            key="min_goals_per90",
             min_value=0.0,
             max_value=float(df["goals_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_goals_per90",
         )
 
-        min_assists_per90 = st.number_input(
+        min_assists_per90 = number_input_persist(
             "Min assists per 90",
+            key="min_assists_per90",
             min_value=0.0,
             max_value=float(df["assists_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_assists_per90",
         )
 
     with col_s4:
-        min_xg = st.number_input(
+        min_xg = number_input_persist(
             "Min expected goals (xG)",
+            key="min_xg",
             min_value=0.0,
             max_value=float(df["xG"].max()),
             value=0.0,
             step=1.0,
-            key="min_xg",
         )
 
-        min_xa = st.number_input(
+        min_xa = number_input_persist(
             "Min expected assists (xA)",
+            key="min_xa",
             min_value=0.0,
             max_value=float(df["xA"].max()),
             value=0.0,
             step=1.0,
-            key="min_xa",
         )
 
     with col_s5:
-        min_xg_per90 = st.number_input(
+        min_xg_per90 = number_input_persist(
             "Min xG per 90",
+            key="min_xg_per90",
             min_value=0.0,
             max_value=float(df["xG_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_xg_per90",
         )
 
-        min_xa_per90 = st.number_input(
+        min_xa_per90 = number_input_persist(
             "Min xA per 90",
+            key="min_xa_per90",
             min_value=0.0,
             max_value=float(df["xA_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_xa_per90",
         )
 
     with col_s6:
-        min_xg_chain = st.number_input(
+        min_xg_chain = number_input_persist(
             "Min xG chain",
+            key="min_xg_chain",
             min_value=0.0,
             max_value=float(df["xGChain"].max()),
             value=0.0,
             step=1.0,
-            key="min_xg_chain",
         )
 
-        min_xg_buildup = st.number_input(
+        min_xg_buildup = number_input_persist(
             "Min xG buildup",
+            key="min_xg_buildup",
             min_value=0.0,
             max_value=float(df["xGBuildup"].max()),
             value=0.0,
             step=1.0,
-            key="min_xg_buildup",
         )
 
     with col_s7:
-        min_xg_chain_per90 = st.number_input(
+        min_xg_chain_per90 = number_input_persist(
             "Min xG chain per 90",
+            key="min_xg_chain_per90",
             min_value=0.0,
             max_value=float(df["xGChain_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_xg_chain_per90",
         )
 
-        min_xg_buildup_per90 = st.number_input(
+        min_xg_buildup_per90 = number_input_persist(
             "Min xG buildup per 90",
+            key="min_xg_buildup_per90",
             min_value=0.0,
             max_value=float(df["xGBuildup_per90"].max()),
             value=0.0,
             step=0.1,
-            key="min_xg_buildup_per90",
         )
 
 # --------------------------- APPLY FILTERS --------------------------------
