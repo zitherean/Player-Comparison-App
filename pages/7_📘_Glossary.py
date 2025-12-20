@@ -102,3 +102,5 @@ for code, description in positions:
     st.markdown(f"**{code}** -- {description}")
 
 st.info("Player positions are based on Understat's classification and may not reflect exact tactical roles.")
+
+st.divider()
