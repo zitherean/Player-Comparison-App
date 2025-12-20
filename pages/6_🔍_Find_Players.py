@@ -27,15 +27,18 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     selected_seasons = multiselect_filter("Season(s)", df["season"], f"seasons_multifilter", sort_reverse=True)
+    df_seasons = df[df["season"].isin(selected_seasons)] if selected_seasons else df
 
 with col2:
-    selected_leagues = multiselect_filter("League(s)", df["league"], f"leagues_multifilter")
+    selected_leagues = multiselect_filter("League(s)", df_seasons["league"], f"leagues_multifilter")
+    df_leagues = df_seasons[df_seasons["league"].isin(selected_leagues)] if selected_leagues else df_seasons
 
 with col3:
-    selected_positions = multiselect_filter("Position(s)", df["position"], f"positions_multifilter")
-    
+    selected_teams = multiselect_filter("Team(s)", df_leagues["team_title"], f"teams_multifilter")
+    df_teams = df_leagues[df_leagues["team_title"].isin(selected_teams)] if selected_teams else df_leagues
+
 with col4:
-    selected_teams = multiselect_filter("Team(s)", df["team_title"], f"teams_multifilter")
+    selected_positions = multiselect_filter("Position(s)", df_teams["position"], f"positions_multifilter")
 
 # --------------------------- RESET BUTTON ---------------------------------
 
