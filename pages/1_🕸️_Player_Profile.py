@@ -46,9 +46,9 @@ RADAR_KEY_TO_LABEL = {
 
 DEFAULT_RADAR_METRICS = ["goals_per90", "shots_per90", "assists_per90", "xGBuildup_per90", "xGChain_per90"]
 
-with st.expander("Select Radar Metrics"):
+with st.expander("Radar metrics", expanded=False):
     selected_labels = st.multiselect(
-        "Select radar metrics (per 90)",
+        "Select radar metrics",
         options=list(RADAR_LABEL_TO_KEY.keys()),
         default=[RADAR_KEY_TO_LABEL[k] for k in DEFAULT_RADAR_METRICS],
         key="radar_stats",
@@ -56,9 +56,10 @@ with st.expander("Select Radar Metrics"):
 
 # Convert labels → column names
 selected_stats = [RADAR_LABEL_TO_KEY[l] for l in selected_labels]
+title = "Performance Profile"
 
 if len(selected_stats) >= 3:
-    fig = plot_radar(df=df, player1_data=p1_data, player2_data=p2_data, label1=p1_label, label2=p2_label, stats=selected_stats, title="Per 90 Radar (percentile)")
+    fig = plot_radar(df, p1_data, p2_data, p1_label, p2_label, selected_stats, title)
 
     if fig is not None:
         st.plotly_chart(fig, width="stretch")
