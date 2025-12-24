@@ -125,6 +125,7 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
 
     if player1_data is not None:
         r1 = player_r_values(player1_data, stats, df_stats)
+        val1 = [player1_data.get(s, np.nan) for s in stats]
         fig.add_trace(
             go.Scatterpolar(
                 r=r1 + [r1[0]], 
@@ -132,13 +133,20 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
                 name=label1, 
                 line=dict(color="#1f77b4"),
                 fill="toself",
-                fillcolor="rgba(31,119,180,0.35)"
-
+                fillcolor="rgba(31,119,180,0.35)",
+                customdata=(val1 + [val1[0]]),
+                hovertemplate=(
+                    "<b>%{fullData.name}</b><br>"
+                    "%{theta}<br>"
+                    "Value: %{customdata:.2f}<br>"
+                    "Percentile: %{r:.1f}<extra></extra>"
+                ),
             )
         )
 
     if player2_data is not None:
         r2 = player_r_values(player2_data, stats, df_stats)
+        val2 = [player2_data.get(s, np.nan) for s in stats]
         fig.add_trace(
             go.Scatterpolar(
                 r=r2 + [r2[0]], 
@@ -146,8 +154,14 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
                 name=label2, 
                 line=dict(color="#d62728"),
                 fill="toself",
-                fillcolor="rgba(214,39,40,0.35)"
-
+                fillcolor="rgba(214,39,40,0.35)",
+                customdata=(val2 + [val2[0]]),
+                hovertemplate=(
+                    "<b>%{fullData.name}</b><br>"
+                    "%{theta}<br>"
+                    "Value: %{customdata:.2f}<br>"
+                    "Percentile: %{r:.1f}<extra></extra>"
+                ),
             )
         )
 
