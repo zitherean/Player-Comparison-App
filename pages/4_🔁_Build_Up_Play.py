@@ -9,7 +9,7 @@ from utils.format import clean_html_entities
 
 st.set_page_config(page_title="Build Up Play", layout="wide")
 
-st.title("🔁 Build Up Play Comparison")
+st.title("🔁 Build Up Play")
 
 # --------------------------- LOAD DATA & SELECT PLAYERS ---------------------------
 

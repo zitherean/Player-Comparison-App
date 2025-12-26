@@ -9,7 +9,7 @@ from utils.format import clean_html_entities
 
 st.set_page_config(page_title="Finishing", layout="wide")
 
-st.title("🥅 Finishing Comparison")
+st.title("🥅 Finishing")
 
 # --------------------------- LOAD DATA & SELECT PLAYERS ---------------------------
 
