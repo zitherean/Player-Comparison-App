@@ -84,3 +84,5 @@ FLOAT_KEYS = {
     "min_xg_chain", "min_xg_buildup",
     "min_xg_chain_per90", "min_xg_buildup_per90",
 }
+
+LOWER_IS_BETTER = {"red_cards", "red_per90", "yellow_cards", "yellow_per90"}

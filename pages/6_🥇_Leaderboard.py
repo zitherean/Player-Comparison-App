@@ -2,7 +2,7 @@ import streamlit as st
 from constants import PARQUET_PATH, CURRENT_SEASON_NAME, CURRENT_SEASON
 from utils.data_loader import load_understat_data
 from utils.leaderboard import display_leaderboard, build_player_table
-from utils.text import clean_html_entities
+from utils.format import clean_html_entities
 
 ALL_SEASON_STRING = "all seasons"
 

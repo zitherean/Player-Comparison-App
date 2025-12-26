@@ -1,8 +1,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import html
-from constants import LEAGUE_NAME_MAP
+from utils.format import to_float, format_value
+from constants import LOWER_IS_BETTER
 from utils.season import SEASON_NAME_MAP
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
@@ -118,66 +118,62 @@ def display_player_info(player_data):
     )
 
 # --------------------------- KPI DISPLAY METRICS ---------------------------
-def format_value(value):
-    """
-    Formats any metric consistently:
-      - NaN -> "0"
-      - Integer -> "5"
-      - Float -> "0.45"
-      - String -> unchanged
-    """
 
-    if value is None:
-        return "—"
-
-    # Handle pandas / numpy NaN
-    if isinstance(value, float) and np.isnan(value):
-        return 0
-
-    # Try numeric conversion
-    try:
-        num = float(value)
-
-        # integer-like (3.0 becomes "3")
-        if num.is_integer():
-            return str(int(num))
-
-        # float -> format with 2 decimals
-        return f"{num:.2f}"
-
-    except (ValueError, TypeError):
-        # Non-numeric: keep original (e.g. names, clubs)
-        return str(value)
-
-def display_key_stats(title, p1_clean, p2_clean=None, metrics=None):
-    """
-    Show key stats for one or two players.
-    - p1_clean: required
-    - p2_clean: optional (None = single-player mode)
-    - metrics: list of (label, key)
-    """
+def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
     if metrics is None:
         metrics = []
 
     st.markdown(f"### {title}")
 
-    # Two-player layout
-    if p2_clean is not None:
-        col_p1, col_p2 = st.columns(2)
+    # Decide layout
+    if p1_clean is not None and p2_clean is not None:
+        col1, col2 = st.columns(2)
 
-        with col_p1:
-            for label, key in metrics:
-                st.metric(f"{label} ({p1_clean['player_name']})", format_value(p1_clean.get(key, 0)))
+        with col1:
+            with st.container(border=True):
+                for label, key in metrics:
+                    v1 = to_float(p1_clean.get(key, 0))
+                    v2 = to_float(p2_clean.get(key, 0))
 
-        with col_p2:
-            for label, key in metrics:
-                st.metric(f"{label} ({p2_clean['player_name']})", format_value(p2_clean.get(key, 0)))
+                    delta = None
+                    if v1 is not None and v2 is not None:
+                        d = v1 - v2
+                        # hide delta if equal
+                        if abs(d) > 1e-9:
+                            delta = d
 
-    # Single-player layout
+                    st.metric(
+                        label=label,
+                        value=format_value(p1_clean.get(key, 0)),
+                        delta=None if delta is None else format_value(delta),
+                        delta_color=("inverse" if key in LOWER_IS_BETTER else "normal"),
+                    )
+
+        with col2:
+            with st.container(border=True):
+                for label, key in metrics:
+                    v1 = to_float(p1_clean.get(key, 0))
+                    v2 = to_float(p2_clean.get(key, 0))
+
+                    delta = None
+                    if v1 is not None and v2 is not None:
+                        d = v2 - v1
+                        if abs(d) > 1e-9:
+                            delta = d
+
+                    st.metric(
+                        label=label,
+                        value=format_value(p2_clean.get(key, 0)),
+                        delta=None if delta is None else format_value(delta),
+                        delta_color=("inverse" if key in LOWER_IS_BETTER else "normal"),
+                    )
+
     else:
-        # Just one column for Player 1
-        for label, key in metrics:
-            st.metric(f"{label} ({p1_clean['player_name']})", format_value(p1_clean.get(key, 0)))
+        # single player (left aligned)
+        p = p1_clean if p1_clean is not None else p2_clean
+        with st.container(border=True):
+            for label, key in metrics:
+                st.metric(label=label, value=format_value(p.get(key, 0)))
 
 # --------------------------- SEARCH + SELECT ---------------------------
 

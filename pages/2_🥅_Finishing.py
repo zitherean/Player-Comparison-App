@@ -3,7 +3,7 @@ from constants import PARQUET_PATH
 from utils.data_loader import load_understat_data
 from utils.players import select_single_player, build_pos_map
 from utils.charts import plot_comparison
-from utils.text import clean_html_entities
+from utils.format import clean_html_entities
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
 

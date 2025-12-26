@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from constants import METRIC_LABELS
-from utils.players import enrich_player_metrics, format_value
+from utils.players import enrich_player_metrics
+from utils.format import format_value
 
 @st.cache_data
 def build_player_table(df, season=None):
