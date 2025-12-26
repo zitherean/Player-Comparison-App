@@ -65,8 +65,11 @@ def display_leaderboard(df, stat_cols, season_string, n=10):
     """Display a leaderboard of players for one or more statistics."""
 
     leaderboard = (
-        df[["player_name"] + stat_cols]   
-        .sort_values(stat_cols[0], ascending=False)
+        df[["player_name"] + stat_cols]
+        .sort_values(
+            by=stat_cols,
+            ascending=[False] * len(stat_cols)
+        )
         .head(n)
         .reset_index(drop=True)
     )
