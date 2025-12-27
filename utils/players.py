@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from utils.format import to_float, format_value
-from constants import LOWER_IS_BETTER
+from constants import LOWER_IS_BETTER, EPS
 from utils.season import SEASON_NAME_MAP
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
@@ -131,17 +131,16 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col1:
             with st.container(border=True):
+                st.markdown(f"**{p1_clean['player_name']}**")
                 for label, key in metrics:
-                    v1 = to_float(p1_clean.get(key, 0))
-                    v2 = to_float(p2_clean.get(key, 0))
+                    v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
+                    v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
 
+                    d = v2 - v1
                     delta = None
-                    if v1 is not None and v2 is not None:
-                        d = v1 - v2
-                        # hide delta if equal
-                        if abs(d) > 1e-9:
-                            delta = d
-
+                    if d != 0:
+                        delta = d
+                    
                     st.metric(
                         label=label,
                         value=format_value(p1_clean.get(key, 0)),
@@ -151,15 +150,15 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col2:
             with st.container(border=True):
+                st.markdown(f"**{p2_clean['player_name']}**")
                 for label, key in metrics:
-                    v1 = to_float(p1_clean.get(key, 0))
-                    v2 = to_float(p2_clean.get(key, 0))
+                    v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
+                    v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
 
+                    d = v2 - v1
                     delta = None
-                    if v1 is not None and v2 is not None:
-                        d = v2 - v1
-                        if abs(d) > 1e-9:
-                            delta = d
+                    if d != 0:
+                        delta = d
 
                     st.metric(
                         label=label,
@@ -172,6 +171,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
         # single player (left aligned)
         p = p1_clean if p1_clean is not None else p2_clean
         with st.container(border=True):
+            st.markdown(f"**{p['player_name']}**")
             for label, key in metrics:
                 st.metric(label=label, value=format_value(p.get(key, 0)))
 
