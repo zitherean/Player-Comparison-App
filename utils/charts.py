@@ -78,13 +78,35 @@ def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type
 
     # Center title and include subtitle
     title_text = title if not subtitle else f"{title}<br><sup>{subtitle}</sup>"
+
+    base_height = max(420, 55 * len(stats))
     fig.update_layout(
-        title={
-            "text": title_text,
-            "x": 0.5,
-            "xanchor": "center",
-            "yanchor": "top",
-        }
+        autosize=True,
+        height=base_height,
+
+        title=dict(
+            text=title_text,
+            x=0.5,
+            xanchor="center",
+            y=0.90,
+            yanchor="top",
+            font=dict(size=20),
+        ),
+
+        margin=dict(
+            l=80,     # 👈 space for long stat labels
+            r=80,
+            t=140,     # 👈 space for title + legend
+            b=60,
+        ),
+        legend=dict(
+            orientation="h",
+            x=0.5,
+            xanchor="center",
+            y=1.10,          # 👈 push legend upward
+            yanchor="bottom",
+            title_text=None,
+        ),
     )
 
     return fig
@@ -173,13 +195,35 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
         subtitle = f"{player2_data['player_name']}"
 
     title_text = f"{title}<br><sup>{subtitle}</sup>"
+
     fig.update_layout(
-        title={"text": title_text, "x": 0.5, "xanchor": "center"}, 
-        polar=dict(radialaxis=dict(visible=True, range=[r_min, r_max])), 
-        showlegend=True, 
-        margin=dict(l=40, r=40, t=60, b=40),
-        width=650,
-        height=650
+        autosize=True,
+        height=700,      
+
+        title=dict(
+            text=title_text,
+            x=0.5,
+            xanchor="center",
+            y=0.95,
+            yanchor="top",
+
+        ),
+        margin=dict(
+            l=16,
+            r=16,
+            t=130,        
+            b=80,
+        ),
+        polar=dict(
+            radialaxis=dict(visible=True, range=[0, 100]),
+        ),
+        legend=dict(
+            orientation="h",
+            x=0.5,
+            xanchor="center",
+            y=1.05,
+            yanchor="bottom",
+        ),
     )
 
     return fig
