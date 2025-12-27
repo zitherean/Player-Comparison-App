@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from utils.format import to_float, format_value
-from constants import LOWER_IS_BETTER, EPS
+from constants import LOWER_IS_BETTER
 from utils.season import SEASON_NAME_MAP
 
 # --------------------------- ENRICH PLAYER METRICS ---------------------------
@@ -136,7 +136,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
                     v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
                     v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
 
-                    d = v2 - v1
+                    d = v1 - v2
                     delta = None
                     if d != 0:
                         delta = d
