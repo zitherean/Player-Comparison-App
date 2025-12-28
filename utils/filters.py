@@ -6,18 +6,30 @@ from utils.players import accumulate_player_rows
 # --------------------------- FILTER ---------------------------
 
 def multiselect_filter(label, series, key, default=None, sort_reverse=False):
+
     options = sorted(series.unique(), reverse=sort_reverse)
 
-    store_key = f"__store__{key}"        
-    default = st.session_state.get(store_key, default)
-    # keep defaults valid
-    default = [v for v in default if v in options]
+    store_key = f"__store__{key}"
 
-    value = st.multiselect(label, options=options, default=default, key=key)
+    # Load persisted default or provided default
+    persisted = st.session_state.get(store_key, None)
+    default_value = persisted if persisted is not None else default
 
-    # persist selection for next time you visit the page
+    # Ensure default_value is a list
+    if default_value is None:
+        default_value = []
+    else:
+        default_value = list(default_value)
+
+    # Keep only valid defaults that exist in options
+    default_value = [v for v in default_value if v in options]
+
+    value = st.multiselect(label, options=options, default=default_value, key=key)
+
+    # Persist selection
     st.session_state[store_key] = value
     return value
+
 
 def number_input_persist(label, key, min_value, max_value, value, step=1):
     # initialize once
