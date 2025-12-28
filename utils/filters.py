@@ -5,12 +5,11 @@ from utils.players import accumulate_player_rows
 
 # --------------------------- FILTER ---------------------------
 
-def multiselect_filter(label, series, key, sort_reverse=False):
+def multiselect_filter(label, series, key, default=None, sort_reverse=False):
     options = sorted(series.unique(), reverse=sort_reverse)
 
     store_key = f"__store__{key}"        
-    default = st.session_state.get(store_key, [])
-
+    default = st.session_state.get(store_key, default)
     # keep defaults valid
     default = [v for v in default if v in options]
 
