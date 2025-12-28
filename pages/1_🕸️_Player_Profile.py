@@ -1,9 +1,11 @@
 import streamlit as st
+import pandas as pd
 from constants import PARQUET_PATH, METRIC_LABELS
 from utils.data_loader import load_understat_data
 from utils.players import select_single_player, build_pos_map
 from utils.charts import plot_radar
 from utils.format import clean_html_entities
+from utils.filters import multiselect_filter
 
 # --------------------------- PAGE CONFIGURATION ---------------------------
 
@@ -35,7 +37,6 @@ RADAR_METRICS_PER90 = [
     if k.endswith("_per90")
 ]
 
-# Label ↔ key mapping
 RADAR_LABEL_TO_KEY = {
     METRIC_LABELS[k]: k for k in RADAR_METRICS_PER90
 }
@@ -47,14 +48,13 @@ RADAR_KEY_TO_LABEL = {
 DEFAULT_RADAR_METRICS = ["goals_per90", "shots_per90", "assists_per90", "xGBuildup_per90", "xGChain_per90"]
 
 with st.expander("Radar metrics", expanded=False):
-    selected_labels = st.multiselect(
+    selected_labels = multiselect_filter(
         "Select radar metrics",
-        options=list(RADAR_LABEL_TO_KEY.keys()),
-        default=[RADAR_KEY_TO_LABEL[k] for k in DEFAULT_RADAR_METRICS],
+        series=pd.Series(RADAR_LABEL_TO_KEY.keys()),
         key="radar_stats",
+        default=[RADAR_KEY_TO_LABEL[k] for k in DEFAULT_RADAR_METRICS],
     )
 
-# Convert labels → column names
 selected_stats = [RADAR_LABEL_TO_KEY[l] for l in selected_labels]
 title = "Performance Profile"
 
