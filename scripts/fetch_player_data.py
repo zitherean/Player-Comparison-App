@@ -4,6 +4,7 @@ import pandas as pd
 from understat import Understat
 from utils.partitioned_parquet import write_partitioned_players
 from utils.season import get_current_understat_season
+from utils.update_metadata import write_last_update
 
 # Max number of concurrent requests (both semaphore and TCP connector use this) 
 # Be friendly to Understat's servers
@@ -147,7 +148,9 @@ async def main():
             print(f"[INFO] No data for {league} {season}")
             continue
         write_partitioned_players(df, mode="overwrite")
-
+        
+    # Update metadata
+    write_last_update()
 
 if __name__ == "__main__":
     asyncio.run(main())

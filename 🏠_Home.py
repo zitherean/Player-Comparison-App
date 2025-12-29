@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.update_metadata import get_last_update
 
 # --------------------------- HOME PAGE ---------------------------
 
@@ -65,3 +66,10 @@ st.caption("""This app is intended for informational and educational purposes on
             The developer has no affiliation with Understat.""")
 
 st.caption("© 2025 Sami Finkbeiner") 
+
+meta = get_last_update()
+
+if meta:
+    st.caption(f"Data last updated: **{meta['updated_at_utc']}**")
+else:
+    st.caption("Data last updated: unknown")
