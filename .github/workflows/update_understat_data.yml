@@ -31,7 +31,7 @@ jobs:
 
       - name: Run updater
         run: |
-          python scripts/fetch_player_data.py
+          python -m scripts.fetch_player_data
 
       - name: Commit & push if changed
         run: |
