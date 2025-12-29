@@ -1,14 +1,15 @@
 # ⚽ Player Comparison Dashboard
-👉 [Open App](https://football-player-comparison.streamlit.app/)     
+👉 [Open App](https://football-player-analytics.streamlit.app/)     
 
 A Streamlit web app for comparing football player performance across the top 5 European leagues using data from [Understat.com](https://understat.com).   
 > Best viewed on a computer.
 ---
 ## 🚀 Features
-- Compare two players side-by-side by league, season, and team.
+- Compare two players side-by-side.
 - Visualize attacking, creative, and build-up play metrics.
 - Toggle between **total stats** and **per 90 minutes** views.
-- Interactive bar charts powered by Plotly.
+- Interactive bar charts and radar plots.
+- Leaderboards, and find player functionality
 
 ---
 ## 🧩 Setup Instructions
@@ -46,13 +47,13 @@ pip install -r requirements.txt
 Run the Understat data fetcher:
 
 ```bash
-python scripts/fetch_player_data.py
+python -m scripts.fetch_player_data
 ```
 This will create partitioned Parquet files under data/understat_players/.
 
-### 6. Launch the Streamlit dashboard
+### 6. Launch the Streamlit app
 ```bash
-streamlit run app.py
+streamlit run 🏠_Home.py
 ```
 ---
 ## 🧠 Notes
@@ -69,3 +70,4 @@ Developed by Sami Finkbeiner.
 Special thanks to the Understat community for providing open football data.
 
 ---
+
