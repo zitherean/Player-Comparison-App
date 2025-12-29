@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 
 def write_last_update():
-    path = Path("data/_last_update.json")
+    path = Path("data/last_update.json")
     path.parent.mkdir(parents=True, exist_ok=True)
 
     today_utc = datetime.now(timezone.utc)
@@ -17,7 +17,7 @@ def write_last_update():
         json.dump(payload, f, indent=2)
 
 def get_last_update():
-    path = Path("data/_last_update.json")
+    path = Path("data/last_update.json")
     if not path.exists():
         return None
 
