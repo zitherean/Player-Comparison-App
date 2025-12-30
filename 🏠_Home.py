@@ -24,23 +24,23 @@ with col1:
 
 with col2:
     if st.button("🥅 Finishing"):
-        st.switch_page("pages/1_🥅_Finishing.py")
+        st.switch_page("pages/2_🥅_Finishing.py")
 
 with col3:
     if st.button("🎯 Creativity"):
-        st.switch_page("pages/2_🎯_Creativity.py")
+        st.switch_page("pages/3_🎯_Creativity.py")
 
 with col4:
     if st.button("🔁 Build Up Play"):
-        st.switch_page("pages/3_🔁_Build_Up_Play.py")
-
+        st.switch_page("pages/4_🔁_Build_Up_Play.py")
+        
 with col5:
     if st.button("📐 Metrics"):
-        st.switch_page("pages/4_📐_Metrics.py")
+        st.switch_page("pages/5_📐_Metrics.py")
 
 with col6:
     if st.button("🥇 Leaderboard"):
-        st.switch_page("pages/5_🥇_Leaderboard.py")
+        st.switch_page("pages/6_🥇_Leaderboard.py")
 
 # --------------------------- SECTION 2: MORE TOOLS ---------------------------
 
@@ -49,12 +49,12 @@ st.subheader("More Tools")
 st.markdown("""If you’re looking for specific profiles, use **Find Players** to search and filter the dataset.""")
 
 if st.button("🔍 Find Players"):
-    st.switch_page("pages/6_🔍_Find_Players.py")
+    st.switch_page("pages/7_🔍_Find_Players.py")
 
 st.markdown("""If you're unsure about player positions or metrics, check the **Glossary** for short explanations.""")
 
 if st.button("📘 Glossary"):
-    st.switch_page("pages/7_📘_Glossary.py")
+    st.switch_page("pages/8_📘_Glossary.py")
 
 st.divider()
 
