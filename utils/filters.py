@@ -3,35 +3,35 @@ import pandas as pd
 
 # --------------------------- FILTER ---------------------------
 
-def multiselect_filter(label, series, key, default=None, sort_reverse=False, default_all=False):
-    options = sorted(series.unique(), reverse=sort_reverse)
+def multiselect_filter(label, series, key, default=None, sort_reverse=False, default_all=False, format_func=None):
+    options = sorted(series.dropna().unique(), reverse=sort_reverse)
 
     store_key = f"__store__{key}"
 
-    # Load persisted default or provided default
+    # Load persisted selection first (if any)
     persisted = st.session_state.get(store_key, None)
 
-    # If nothing persisted yet, decide the initial default
-    if persisted is None:
+    # Decide default_value
+    if persisted is not None:
+        default_value = list(persisted)
+    else:
         if default_all:
-            default_value = options[:]     
+            default_value = list(options)
         elif default is None:
             default_value = []
         else:
             default_value = list(default)
-    else:
-        default_value = list(persisted)
 
     # Keep only valid defaults that exist in options
     default_value = [v for v in default_value if v in options]
 
-    value = st.multiselect(label, options=options, default=default_value, key=key)
+    if format_func is None:
+        value = st.multiselect(label, options=options, default=default_value, key=key)
+    else:
+        value = st.multiselect(label, options=options, default=default_value, key=key, format_func=format_func)
 
-    # Persist selection
     st.session_state[store_key] = value
     return value
-
-
 
 def number_input_persist(label, key, min_value, max_value, value, step=1):
     # initialize once

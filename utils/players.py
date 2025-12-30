@@ -263,7 +263,7 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
     rows = df[df["player_name"] == player].copy()
 
     # IMPORTANT: use seasons from *rows*, not df, so options are only seasons the player has.
-    selected_seasons = multiselect_filter("Filter by season (optional)", rows["season"], f"{key_prefix}_season_select", default_all=True, sort_reverse=True)
+    selected_seasons = multiselect_filter("Select season(s)", rows["season"], f"{key_prefix}_season_select", default_all=True, sort_reverse=True, format_func=lambda s: SEASON_NAME_MAP.get(str(s), s))
 
     # Determine if selection means "all seasons"
     all_seasons_for_player = sorted(rows["season"].unique(), reverse=True)
