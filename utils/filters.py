@@ -1,35 +1,37 @@
 import streamlit as st
 import pandas as pd
-from utils.players import accumulate_player_rows
-
 
 # --------------------------- FILTER ---------------------------
 
-def multiselect_filter(label, series, key, default=None, sort_reverse=False):
-
-    options = sorted(series.unique(), reverse=sort_reverse)
+def multiselect_filter(label, series, key, default=None, sort_reverse=False, default_all=False, format_func=None):
+    options = sorted(series.dropna().unique(), reverse=sort_reverse)
 
     store_key = f"__store__{key}"
 
-    # Load persisted default or provided default
+    # Load persisted selection first (if any)
     persisted = st.session_state.get(store_key, None)
-    default_value = persisted if persisted is not None else default
 
-    # Ensure default_value is a list
-    if default_value is None:
-        default_value = []
+    # Decide default_value
+    if persisted is not None:
+        default_value = list(persisted)
     else:
-        default_value = list(default_value)
+        if default_all:
+            default_value = list(options)
+        elif default is None:
+            default_value = []
+        else:
+            default_value = list(default)
 
     # Keep only valid defaults that exist in options
     default_value = [v for v in default_value if v in options]
 
-    value = st.multiselect(label, options=options, default=default_value, key=key)
+    if format_func is None:
+        value = st.multiselect(label, options=options, default=default_value, key=key)
+    else:
+        value = st.multiselect(label, options=options, default=default_value, key=key, format_func=format_func)
 
-    # Persist selection
     st.session_state[store_key] = value
     return value
-
 
 def number_input_persist(label, key, min_value, max_value, value, step=1):
     # initialize once
@@ -55,15 +57,3 @@ def apply_stat_filters(df, filters):
             df = df[df[col] >= value]
     return df
 
-# --------------------------- DATAFRAME ---------------------------
-
-def get_result_dataframe(df, selected_seasons):
-    if len(selected_seasons) != 1:
-        aggregated_rows = []
-
-        for _, rows in df.groupby("player_name"):
-            aggregated_rows.append(accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"))
-
-        return pd.DataFrame(aggregated_rows)
-
-    return df.drop_duplicates(subset=["player_name", "season", "team_title"])
