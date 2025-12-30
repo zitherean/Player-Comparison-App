@@ -51,14 +51,6 @@ def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type
     else:
         labels = {"value": "Total", "stat_label": "Metric", "series": "Legend"}
 
-    # Subtitle text (for info, optional)
-    if player1_data is not None and player2_data is not None:
-        subtitle = f"{player1_data['player_name']} vs {player2_data['player_name']}"
-    elif player1_data is not None:
-        subtitle = f"{player1_data['player_name']}"
-    else:
-        subtitle = f"{player2_data['player_name']}"
-
     # Build figure
     fig = px.bar(
         plot_df,
@@ -76,34 +68,31 @@ def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type
         },
     )
 
-    # Center title and include subtitle
-    title_text = title if not subtitle else f"{title}<br><sup>{subtitle}</sup>"
-
     base_height = max(420, 55 * len(stats))
     fig.update_layout(
         autosize=True,
         height=base_height,
 
         title=dict(
-            text=title_text,
+            text=title,
             x=0.5,
             xanchor="center",
-            y=0.90,
+            y=0.95,
             yanchor="top",
             font=dict(size=20),
         ),
 
         margin=dict(
-            l=80,     # 👈 space for long stat labels
-            r=80,
-            t=140,     # 👈 space for title + legend
-            b=60,
+            l=16,
+            r=16,
+            t=110,        
         ),
+        
         legend=dict(
             orientation="h",
             x=0.5,
             xanchor="center",
-            y=1.10,          # 👈 push legend upward
+            y=1.05,
             yanchor="bottom",
             title_text=None,
         ),
@@ -138,8 +127,6 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
         return None
 
     categories = [METRIC_LABELS.get(s, s) for s in stats]
-    r_min = 0
-    r_max = 100
 
     df_stats = df[stats]
 
@@ -187,21 +174,12 @@ def plot_radar(df, player1_data, player2_data, label1, label2, stats, title):
             )
         )
 
-    if player1_data is not None and player2_data is not None:
-        subtitle = f"{player1_data['player_name']} vs {player2_data['player_name']}"
-    elif player1_data is not None:
-        subtitle = f"{player1_data['player_name']}"
-    else:
-        subtitle = f"{player2_data['player_name']}"
-
-    title_text = f"{title}<br><sup>{subtitle}</sup>"
-
     fig.update_layout(
         autosize=True,
         height=700,      
 
         title=dict(
-            text=title_text,
+            text=title,
             x=0.5,
             xanchor="center",
             y=0.95,
