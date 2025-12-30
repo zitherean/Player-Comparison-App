@@ -77,7 +77,7 @@ def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type
             text=title,
             x=0.5,
             xanchor="center",
-            y=0.95,
+            y=0.9,
             yanchor="top",
             font=dict(size=20),
         ),
@@ -85,15 +85,13 @@ def plot_comparison(player1_data, player2_data, label1, label2, stats, stat_type
         margin=dict(
             l=16,
             r=16,
-            t=110,        
+            t=130,        
         ),
         
         legend=dict(
             orientation="h",
-            x=0.5,
-            xanchor="center",
-            y=1.05,
             yanchor="bottom",
+            y=-0.5,
             title_text=None,
         ),
     )
