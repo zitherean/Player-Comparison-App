@@ -2,7 +2,8 @@ import streamlit as st
 from constants import PARQUET_PATH, LEAGUE_NAME_MAP, METRIC_LABELS, STAT_FILTERS, FLOAT_KEYS, RESET_KEYS
 from utils.data_loader import load_understat_data
 from utils.players import enrich_player_metrics
-from utils.filters import multiselect_filter, number_input_persist, apply_list_filter, apply_stat_filters, get_result_dataframe
+from utils.filters import multiselect_filter, number_input_persist, apply_list_filter, apply_stat_filters
+from utils.players import get_result_dataframe
 from utils.format import clean_html_entities
 from utils.season import SEASON_NAME_MAP
 

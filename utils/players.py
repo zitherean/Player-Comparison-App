@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from utils.format import to_float, format_value
+from utils.filters import multiselect_filter
 from constants import LOWER_IS_BETTER
 from utils.season import SEASON_NAME_MAP
 
@@ -175,6 +176,19 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
             for label, key in metrics:
                 st.metric(label=label, value=format_value(p.get(key, 0)))
 
+# --------------------------- DATAFRAME ---------------------------
+
+def get_result_dataframe(df, selected_seasons):
+    if len(selected_seasons) != 1:
+        aggregated_rows = []
+
+        for _, rows in df.groupby("player_name"):
+            aggregated_rows.append(accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"))
+
+        return pd.DataFrame(aggregated_rows)
+
+    return df.drop_duplicates(subset=["player_name", "season", "team_title"])
+
 # --------------------------- SEARCH + SELECT ---------------------------
 
 def accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90"):
@@ -218,59 +232,54 @@ def build_pos_map(df):
 
 
 def select_single_player(df, pos_map, label="Player", key_prefix="p"):
-    # --- Precompute positions for fast lookup ---
-
     placeholder = "— Select a player —"
-    players = [placeholder] + sorted(df["player_name"].unique()) # unescape to get rid of weird characters
+    players = [placeholder] + sorted(df["player_name"].unique())
 
-    
-    # --- Default selection behaviour ---
     stored_name = st.session_state.get(f"{key_prefix}_player_name", placeholder)
     default_idx = players.index(stored_name) if stored_name in players else 0
 
-    # --- How to display each option ---
     def fmt(name):
         if name == placeholder:
             return name
         pos = pos_map.get(name, "")
         return f"{name} ({pos})" if pos else name
 
-    # --- Player dropdown ---
-    player = st.selectbox(f"Select {label}", players, index=default_idx, key=f"{key_prefix}_player_select", format_func=fmt)
+    player = st.selectbox(
+        f"Select {label}",
+        players,
+        index=default_idx,
+        key=f"{key_prefix}_player_select",
+        format_func=fmt
+    )
 
-    # If user hasn't selected a real player yet, save selection and stop here
     if player == placeholder:
         st.session_state[f"{key_prefix}_player_name"] = placeholder
-        st.session_state.pop(f"{key_prefix}_season_value", None)
+        st.session_state.pop(f"{key_prefix}_season_select", None)
+        st.session_state.pop(f"__store__{key_prefix}_season_select", None)
         return None, None
 
-    # Save valid selection
     st.session_state[f"{key_prefix}_player_name"] = player
 
-    # --- Filter for that player ---
-    rows = df[df["player_name"] == player]
+    rows = df[df["player_name"] == player].copy()
 
-    # Optional season filter...
-    seasons = ["All seasons"] + sorted(rows["season"].unique(), reverse=True)
-    default_season = st.session_state.get(f"{key_prefix}_season_value", "All seasons")
-    if default_season in seasons:
-        season_idx = seasons.index(default_season)
-    else:
-        season_idx = 0
+    # IMPORTANT: use seasons from *rows*, not df, so options are only seasons the player has.
+    selected_seasons = multiselect_filter("Filter by season (optional)", rows["season"], f"{key_prefix}_season_select", default_all=True, sort_reverse=True)
 
-    season = st.selectbox("Filter by season (optional)", seasons, index=season_idx, key=f"{key_prefix}_season_select", format_func=lambda x: SEASON_NAME_MAP.get(x, x))
+    # Determine if selection means "all seasons"
+    all_seasons_for_player = sorted(rows["season"].unique(), reverse=True)
+    selected_is_all = (len(selected_seasons) == 0) or (set(selected_seasons) == set(all_seasons_for_player))
 
-    st.session_state[f"{key_prefix}_season_value"] = season
-
-    if season == "All seasons":
-        # ---- ACCUMULATED STATS ACROSS ALL SEASONS ----
+    if selected_is_all:
         row = accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90")
-    else:
-        # ---- SINGLE SEASON ----
-        season_rows = rows[rows["season"] == season]
-        season_rows = season_rows.sort_values("season", ascending=False)
+    elif len(selected_seasons) == 1:
+        season = selected_seasons[0]
+        season_rows = rows[rows["season"] == season].sort_values("season", ascending=False)
         row = season_rows.iloc[0]
-    
+    else:
+        # Aggregate only the selected seasons
+        subset = rows[rows["season"].isin(selected_seasons)]
+        row = accumulate_player_rows(subset, minutes_col="time", per90_suffix="_per90")
+
     display_season = SEASON_NAME_MAP.get(str(row["season"]), row["season"])
     label_str = f"{row['player_name']} ({display_season}, {row['team_title']})"
 
