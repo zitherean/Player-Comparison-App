@@ -94,30 +94,6 @@ def _enrich_player_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# --------------------------- DISPLAY METRICS ---------------------------
-
-def display_player_info(player_data):
-    st.markdown(
-        f"""
-        <div style="
-            padding: 12px 16px;
-            border-radius: 10px;
-            background-color: #f7f7f7;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 12px;
-        ">
-            <h3 style="margin-bottom:0;">
-                {player_data['player_name']}
-                <span style="font-size:0.75em;color:gray;">({player_data['position']})</span>
-            </h3>
-            <div style="color:#666;font-size:0.9em;">
-                <strong>{player_data['team_title']}</strong> · {player_data['season']}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 # --------------------------- KPI DISPLAY METRICS ---------------------------
 
 def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
@@ -132,7 +108,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col1:
             with st.container(border=True):
-                st.markdown(f"**{p1_clean['player_name']}**")
+                st.markdown(f"**{p1_clean['player_name']}** ({p1_clean['team_title']})")
                 for label, key in metrics:
                     v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
                     v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
@@ -151,7 +127,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col2:
             with st.container(border=True):
-                st.markdown(f"**{p2_clean['player_name']}**")
+                st.markdown(f"**{p2_clean['player_name']}** ({p2_clean['team_title']})")
                 for label, key in metrics:
                     v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
                     v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
@@ -172,7 +148,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
         # single player (left aligned)
         p = p1_clean if p1_clean is not None else p2_clean
         with st.container(border=True):
-            st.markdown(f"**{p['player_name']}**")
+            st.markdown(f"**{p['player_name']}** ({p['team_title']})")
             for label, key in metrics:
                 st.metric(label=label, value=format_value(p.get(key, 0)))
 
@@ -230,7 +206,6 @@ def build_pos_map(df):
         .to_dict()
     )
 
-
 def select_single_player(df, pos_map, label="Player", key_prefix="p"):
     placeholder = "— Select a player —"
     players = [placeholder] + sorted(df["player_name"].unique())
@@ -256,16 +231,29 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
         st.session_state[f"{key_prefix}_player_name"] = placeholder
         st.session_state.pop(f"{key_prefix}_season_select", None)
         st.session_state.pop(f"__store__{key_prefix}_season_select", None)
+        st.session_state.pop(f"{key_prefix}_prev_player", None)
         return None, None
 
+    # ---- RESET multiselect if player changed ----
+    prev_player = st.session_state.get(f"{key_prefix}_prev_player")
+    if prev_player != player:
+        st.session_state.pop(f"{key_prefix}_season_select", None)
+        st.session_state.pop(f"__store__{key_prefix}_season_select", None)
+    st.session_state[f"{key_prefix}_prev_player"] = player
     st.session_state[f"{key_prefix}_player_name"] = player
 
     rows = df[df["player_name"] == player].copy()
 
-    # IMPORTANT: use seasons from *rows*, not df, so options are only seasons the player has.
-    selected_seasons = multiselect_filter("Select season(s)", rows["season"], f"{key_prefix}_season_select", default_all=True, sort_reverse=True, format_func=lambda s: SEASON_NAME_MAP.get(str(s), s))
+    season_key = f"{key_prefix}_season_select__{player}"
+    selected_seasons = multiselect_filter(
+        "Select season(s)",
+        rows["season"],
+        season_key,
+        default_all=True,
+        sort_reverse=True,
+        format_func=lambda s: SEASON_NAME_MAP.get(str(s), s)
+    )
 
-    # Determine if selection means "all seasons"
     all_seasons_for_player = sorted(rows["season"].unique(), reverse=True)
     selected_is_all = (len(selected_seasons) == 0) or (set(selected_seasons) == set(all_seasons_for_player))
 
@@ -273,14 +261,11 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
         row = accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90")
     elif len(selected_seasons) == 1:
         season = selected_seasons[0]
-        season_rows = rows[rows["season"] == season].sort_values("season", ascending=False)
-        row = season_rows.iloc[0]
+        row = rows[rows["season"] == season].sort_values("season", ascending=False).iloc[0]
     else:
-        # Aggregate only the selected seasons
         subset = rows[rows["season"].isin(selected_seasons)]
         row = accumulate_player_rows(subset, minutes_col="time", per90_suffix="_per90")
 
-    display_season = SEASON_NAME_MAP.get(str(row["season"]), row["season"])
-    label_str = f"{row['player_name']} ({display_season}, {row['team_title']})"
+    label_str = f"{row['player_name']} ({row['team_title']})"
 
     return row, label_str
