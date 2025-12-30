@@ -256,16 +256,29 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
         st.session_state[f"{key_prefix}_player_name"] = placeholder
         st.session_state.pop(f"{key_prefix}_season_select", None)
         st.session_state.pop(f"__store__{key_prefix}_season_select", None)
+        st.session_state.pop(f"{key_prefix}_prev_player", None)
         return None, None
 
+    # ---- RESET multiselect if player changed ----
+    prev_player = st.session_state.get(f"{key_prefix}_prev_player")
+    if prev_player != player:
+        st.session_state.pop(f"{key_prefix}_season_select", None)
+        st.session_state.pop(f"__store__{key_prefix}_season_select", None)
+    st.session_state[f"{key_prefix}_prev_player"] = player
     st.session_state[f"{key_prefix}_player_name"] = player
 
     rows = df[df["player_name"] == player].copy()
 
-    # IMPORTANT: use seasons from *rows*, not df, so options are only seasons the player has.
-    selected_seasons = multiselect_filter("Select season(s)", rows["season"], f"{key_prefix}_season_select", default_all=True, sort_reverse=True, format_func=lambda s: SEASON_NAME_MAP.get(str(s), s))
+    season_key = f"{key_prefix}_season_select__{player}"
+    selected_seasons = multiselect_filter(
+        "Select season(s)",
+        rows["season"],
+        season_key,
+        default_all=True,
+        sort_reverse=True,
+        format_func=lambda s: SEASON_NAME_MAP.get(str(s), s)
+    )
 
-    # Determine if selection means "all seasons"
     all_seasons_for_player = sorted(rows["season"].unique(), reverse=True)
     selected_is_all = (len(selected_seasons) == 0) or (set(selected_seasons) == set(all_seasons_for_player))
 
@@ -273,14 +286,11 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
         row = accumulate_player_rows(rows, minutes_col="time", per90_suffix="_per90")
     elif len(selected_seasons) == 1:
         season = selected_seasons[0]
-        season_rows = rows[rows["season"] == season].sort_values("season", ascending=False)
-        row = season_rows.iloc[0]
+        row = rows[rows["season"] == season].sort_values("season", ascending=False).iloc[0]
     else:
-        # Aggregate only the selected seasons
         subset = rows[rows["season"].isin(selected_seasons)]
         row = accumulate_player_rows(subset, minutes_col="time", per90_suffix="_per90")
 
     display_season = SEASON_NAME_MAP.get(str(row["season"]), row["season"])
     label_str = f"{row['player_name']} ({display_season}, {row['team_title']})"
-
     return row, label_str
