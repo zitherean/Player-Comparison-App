@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from utils.data_loader import load_understat_data
 from utils.format import clean_html_entities
-from utils.players import select_single_player, display_player_info, display_key_stats, enrich_player_metrics, build_pos_map
+from utils.players import select_single_player, display_key_stats, enrich_player_metrics, build_pos_map
 from constants import PARQUET_PATH, LEAGUE_NAME_MAP
 from utils.season import SEASON_NAME_MAP
 
@@ -46,22 +46,7 @@ st.divider()
 if p1_clean is None and p2_clean is None:
     st.info("Select at least one player to see the key metrics.")
     st.stop()
-
-col_p1, col_p2 = st.columns(2)
-if p1_clean is not None and p2_clean is not None:
-    # Two-player layout
-    with col_p1:
-        display_player_info(p1_clean)
-
-    with col_p2:
-        display_player_info(p2_clean)
-elif p1_clean is not None:
-    # Just one column for Player 1
-    display_player_info(p1_clean)
-elif p2_clean is not None:
-    # Just one column for Player 2
-    display_player_info(p2_clean)
-
+    
 # --------------------------- KEY STATS TOTAL ---------------------------
 
 metrics_total = [

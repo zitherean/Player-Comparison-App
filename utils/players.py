@@ -94,30 +94,6 @@ def _enrich_player_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# --------------------------- DISPLAY METRICS ---------------------------
-
-def display_player_info(player_data):
-    st.markdown(
-        f"""
-        <div style="
-            padding: 12px 16px;
-            border-radius: 10px;
-            background-color: #f7f7f7;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 12px;
-        ">
-            <h3 style="margin-bottom:0;">
-                {player_data['player_name']}
-                <span style="font-size:0.75em;color:gray;">({player_data['position']})</span>
-            </h3>
-            <div style="color:#666;font-size:0.9em;">
-                <strong>{player_data['team_title']}</strong> · {player_data['season']}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 # --------------------------- KPI DISPLAY METRICS ---------------------------
 
 def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
@@ -132,7 +108,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col1:
             with st.container(border=True):
-                st.markdown(f"**{p1_clean['player_name']}**")
+                st.markdown(f"**{p1_clean['player_name']}** ({p1_clean['team_title']})")
                 for label, key in metrics:
                     v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
                     v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
@@ -151,7 +127,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
 
         with col2:
             with st.container(border=True):
-                st.markdown(f"**{p2_clean['player_name']}**")
+                st.markdown(f"**{p2_clean['player_name']}** ({p2_clean['team_title']})")
                 for label, key in metrics:
                     v1 = round(to_float(p1_clean.get(key, 0)) or 0.0, 2)
                     v2 = round(to_float(p2_clean.get(key, 0)) or 0.0, 2)
@@ -172,7 +148,7 @@ def display_key_stats(title, p1_clean=None, p2_clean=None, metrics=None):
         # single player (left aligned)
         p = p1_clean if p1_clean is not None else p2_clean
         with st.container(border=True):
-            st.markdown(f"**{p['player_name']}**")
+            st.markdown(f"**{p['player_name']}** ({p['team_title']})")
             for label, key in metrics:
                 st.metric(label=label, value=format_value(p.get(key, 0)))
 
@@ -229,7 +205,6 @@ def build_pos_map(df):
         .astype(str)
         .to_dict()
     )
-
 
 def select_single_player(df, pos_map, label="Player", key_prefix="p"):
     placeholder = "— Select a player —"
@@ -291,6 +266,6 @@ def select_single_player(df, pos_map, label="Player", key_prefix="p"):
         subset = rows[rows["season"].isin(selected_seasons)]
         row = accumulate_player_rows(subset, minutes_col="time", per90_suffix="_per90")
 
-    display_season = SEASON_NAME_MAP.get(str(row["season"]), row["season"])
-    label_str = f"{row['player_name']} ({display_season}, {row['team_title']})"
+    label_str = f"{row['player_name']} ({row['team_title']})"
+
     return row, label_str
